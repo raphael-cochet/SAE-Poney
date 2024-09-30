@@ -1,50 +1,59 @@
-DROP TABLE IF EXISTS reserver;
-DROP TABLE IF EXISTS poney;
-DROP TABLE IF EXISTS cours;
-DROP TABLE IF EXISTS client;
-DROP TABLE IF EXISTS moniteur;
-DROP TABLE IF EXISTS personne;
+DROP TABLE IF EXISTS RESERVER;
+DROP TABLE IF EXISTS COURS_REALISE;
+DROP TABLE IF EXISTS PONEY;
+DROP TABLE IF EXISTS COURS;
+DROP TABLE IF EXISTS CLIENT;
+DROP TABLE IF EXISTS MONITEUR;
+DROP TABLE IF EXISTS PERSONNE;
 
-CREATE TABLE personne (
+CREATE TABLE PERSONNE (
   idP INT PRIMARY KEY,
   nomP VARCHAR(42),
   prenomP VARCHAR(42)
 );
 
-CREATE TABLE client (
+CREATE TABLE CLIENT (
   idCl INT PRIMARY KEY,
   poidCl FLOAT, 
   dateRegCoti DATE,
-  FOREIGN KEY (idCl) REFERENCES personne(idP)
+  FOREIGN KEY (idCl) REFERENCES PERSONNE(idP)
 );
 
-CREATE TABLE moniteur (
+CREATE TABLE MONITEUR (
   idMoniteur INT PRIMARY KEY,
-  FOREIGN KEY (idMoniteur) REFERENCES personne(idP)
+  FOREIGN KEY (idMoniteur) REFERENCES PERSONNE(idP)
 );
 
-CREATE TABLE cours (
+CREATE TABLE COURS (
   idCours INT PRIMARY KEY,
   nbPersMax INT,
   dureeCours INT,
   jourCours DATE,
   heureCours TIME,
   idMoniteur INT NOT NULL,
-  FOREIGN KEY (idMoniteur) REFERENCES moniteur(idMoniteur)
+  FOREIGN KEY (idMoniteur) REFERENCES MONITEUR(idMoniteur)
 );
 
-CREATE TABLE poney (
+CREATE TABLE COURS_REALISE(
+  idCours INT NOT NULL,
+  dateCours DATE NOT NULL,
+  PRIMARY KEY (idCours, dateCours),
+  FOREIGN KEY (idCours) REFERENCES COURS(idCours)
+);
+
+CREATE TABLE PONEY (
   idPoney INT PRIMARY KEY,
   poidMaxPoney FLOAT,
   nomPoney VARCHAR(42)
 );
 
-CREATE TABLE reserver (
+CREATE TABLE RESERVER (
+  idCours INT,
   dateCours DATE,
   idPoney INT,
   idCl INT,
-  PRIMARY KEY (dateCours, idPoney, idCl),
-  FOREIGN KEY (idCl) REFERENCES client(idCl),
-  FOREIGN KEY (idPoney) REFERENCES poney(idPoney)
+  PRIMARY KEY (idCours, dateCours, idPoney, idCl),
+  FOREIGN KEY (idCours, dateCours) REFERENCES COURS_REALISE(idCours, dateCours),
+  FOREIGN KEY (idCl) REFERENCES CLIENT(idCl),
+  FOREIGN KEY (idPoney) REFERENCES PONEY(idPoney)
 );
-
