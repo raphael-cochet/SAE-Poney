@@ -159,7 +159,9 @@ END |
 DELIMITER;
 
 
--- Contrainte 4: Un moniteur peut donner un cours particulier à un seul cavalier
+-- Contrainte 4: Un moniteur peut donner un cours particulier à un seul cavalier ??? message =! justif
+-- !! Le chevauchement n'est pas pris en compte
+
 DELIMITER |
 CREATE OR REPLACE TRIGGER checkInsertMoniteurCoursParticulier
 BEFORE INSERT ON RESERVER FOR EACH ROW
