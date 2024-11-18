@@ -1,0 +1,69 @@
+personnes:
+  - idP: 1
+    nomP: Dupont
+    prenomP: Jean
+  - idP: 2
+    nomP: Martin
+    prenomP: Sophie
+  - idP: 3
+    nomP: Durand
+    prenomP: Paul
+  - idP: 4
+    nomP: Leroy
+    prenomP: Emma
+
+clients:
+  - idP: 1
+    poidCl: 75.0
+  - idP: 2
+    poidCl: 62.0
+
+cotisations:
+  - idCotisation: 1
+    dateRegCoti: "2024-01-11"
+    prixCoti: 11.5
+  - idCotisation: 2
+    dateRegCoti: "2023-10-11"
+    prixCoti: 15.5
+
+moniteurs:
+  - idP: 3
+  - idP: 4
+
+cours:
+  - idCours: 101
+    nbPersMax: 10
+    dureeCours: 60
+    jourCours: "2023-10-01"
+    heureCours: "10:00:00"
+    idMoniteur: 3
+  - idCours: 102
+    nbPersMax: 8
+    dureeCours: 45
+    jourCours: "2023-10-02"
+    heureCours: "14:00:00"
+    idMoniteur: 4
+
+cours_realises:
+  - idCours: 101
+    dateCours: "2023-10-01"
+  - idCours: 102
+    dateCours: "2023-10-02"
+
+poneys:
+  - idPoney: 201
+    poidMaxPoney: 200.0
+    nomPoney: Flash
+  - idPoney: 202
+    poidMaxPoney: 180.0
+    nomPoney: Spirit
+
+reservations:
+  - idCours: 101
+    dateCours: "2023-10-01"
+    idPoney: 201
+    idCl: 1
+  - idCours: 102
+    dateCours: "2023-10-02"
+    idPoney: 202
+    idCl: 2
