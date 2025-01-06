@@ -1,11 +1,42 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil</title>
-</head>
-<body>
-    <h1>Bonjour</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid my-4">
+    <div class="custom-box">
+        <h1 class="text-center">Grand Galop</h1>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Colonne de gauche -->
+        <div class="col-md-5 offset-md-1 text-center">
+            <h2>Rejoignez notre club !</h2>
+            <p>
+                Rejoignez notre club de poney et vivez une expérience unique autour de votre passion.
+                Que vous soyez débutant ou cavalier confirmé, découvrez des cours adaptés, des balades 
+                inoubliables et une ambiance conviviale. Inscrivez-vous dès maintenant sur notre site et faites
+                partie de notre communauté !
+            </p>
+            <a href="#" class="btn btn-primary">Commencer →</a>
+        </div>
+        
+        <!-- Colonne de droite -->
+        <div class="col-md-5 text-center">
+            <h2>Certifiée par la FFE !</h2>
+            <p>
+                Notre club, certifié par la Fédération Française d'Équitation (FFE), vous garantit des activités encadrées 
+                et une expérience équestre de qualité. Rejoignez-nous en toute confiance !
+            </p>
+            <img src="{{ url_for('static', filename='images/FFE_logo.png') }}" alt="FFE Logo" class="img-fluid" style="max-height: 100px;">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
