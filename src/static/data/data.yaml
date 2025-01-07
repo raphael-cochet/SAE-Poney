@@ -1,48 +1,158 @@
-personnes:
-  - idP: 1
-    nomP: "Martin"
-    prenomP: "Jean"
-    type: "moniteur"
-  - idP: 2
-    nomP: "Dupont"
-    prenomP: "Marie"
+clients:
+  - id: 1
+    nomP: "Doe"
+    prenomP: "Jane"
+    mail: "jane.doe@email.com"
     type: "client"
+    poidsC: 55.0
+
+  - id: 2
+    nomP: "Smith"
+    prenomP: "Emily"
+    mail: "emily.smith@email.com"
+    type: "client"
+    poidsC: 60.0
+
+  - id: 3
+    nomP: "Martin"
+    prenomP: "Lucas"
+    mail: "lucas.martin@email.com"
+    type: "client"
+    poidsC: 75.0
+
+  - id: 4
+    nomP: "Dubois"
+    prenomP: "Sophie"
+    mail: "sophie.dubois@email.com"
+    type: "client"
+    poidsC: 52.0
+
 
 moniteurs:
-  - idP: 1
-    idMoniteur: 1
+  - id: 5
+    nomP: "Dupont"
+    prenomP: "Pierre"
+    mail: "pierre.dupont@equitation.com"
+    type: "moniteur"
+    specialite: "Dressage"
+  
+  - id: 6
+    nomP: "Garcia"
+    prenomP: "Maria"
+    mail: "maria.garcia@equitation.com"
+    type: "moniteur"
+    specialite: "Saut d'obstacles"
+  
+  - id: 7
+    nomP: "Lambert"
+    prenomP: "Jean"
+    mail: "jean.lambert@equitation.com"
+    type: "moniteur"
+    specialite: "Équitation western"
+  
+  - id: 8
+    nomP: "Moreau"
+    prenomP: "Claire"
+    mail: "claire.moreau@equitation.com"
+    type: "moniteur"
+    specialite: "Voltige"
 
-clients:
-  - idP: 2
-    idC: 1
-    poidsC: 65.5
+poneys:
+  - idPoney: 1
+    nomPoney: "Caramel"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 2
+    nomPoney: "Éclair"
+    poidsMaxPoney: 90.0
+
+  - idPoney: 3
+    nomPoney: "Noisette"
+    poidsMaxPoney: 70.0
+
+  - idPoney: 4
+    nomPoney: "Tornado"
+    poidsMaxPoney: 85.0
+
+  - idPoney: 5
+    nomPoney: "Princesse"
+    poidsMaxPoney: 65.0
 
 cours:
   - idCours: 1
     nbPersMax: 8
     dureeCours: 1
-    jourCours: "2024-01-15"
-    heureCours: "14:00:00"
+    jourCours: "Lundi"
+    heureCours: "14:00"
+    prixCours: 35.0
+    id_moniteur: 5
+  
+  - idCours: 2
+    nbPersMax: 6
+    dureeCours: 2
+    jourCours: "Mardi"
+    heureCours: "10:00"
+    prixCours: 50.0
+    id_moniteur: 6
+  
+  - idCours: 3
+    nbPersMax: 10
+    dureeCours: 1
+    jourCours: "Mercredi"
+    heureCours: "15:00"
+    prixCours: 35.0
+    id_moniteur: 7
+  
+  - idCours: 4
+    nbPersMax: 4
+    dureeCours: 1
+    jourCours: "Jeudi"
+    heureCours: "17:00"
     prixCours: 45.0
-    idMoniteur: 1
+    id_moniteur: 8
 
-cours_realises:
-  - idCours: 1
-    dateCours: "2024-01-15"
-
-poneys:
-  - idPoney: 1
-    poidMaxPoney: 90.0
-    nomPoney: "Tornado"
+reservations:
+  - id: 1
+    id_cours: 1
+    id_client: 1
+    id_poney: 1
+    dateCours: "2025-01-13 14:00:00"
+  
+  - id: 2
+    id_cours: 1
+    id_client: 2
+    id_poney: 2
+    dateCours: "2025-01-13 14:00:00"
+  
+  - id: 3
+    id_cours: 2
+    id_client: 3
+    id_poney: 3
+    dateCours: "2025-01-14 10:00:00"
+  
+  - id: 4
+    id_cours: 3
+    id_client: 4
+    id_poney: 4
+    dateCours: "2025-01-15 15:00:00"
 
 cotisations:
   - idCotisation: 1
-    dateRegCoti: "2024-01-01"
-    prixCoti: 150.00
-    idC: 2
-
-reservations:
-  - idCours: 1
-    dateCours: "2024-01-15"
-    idPoney: 1
-    idC: 2
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 1
+  
+  - idCotisation: 2
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 2
+  
+  - idCotisation: 3
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 3
+  
+  - idCotisation: 4
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 4
