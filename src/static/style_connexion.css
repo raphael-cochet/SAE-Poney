@@ -48,7 +48,7 @@ body {
 .btn-connexion:hover,
 .btn-primary:hover,
 .btn-violet:hover {
-    background-color: #355cdb;
+    background-color: #1e3583;
     color: white;
 }
 
@@ -116,6 +116,12 @@ body {
 
 .form-check-input:focus {
     box-shadow: 0 0 0 0.2rem rgba(105, 34, 86, 0.5);
+}
+
+.text-center img {
+    max-width: 150px; /* Réduit la largeur maximale du logo */
+    height: auto; /* Conserve les proportions du logo */
+    margin-bottom: 20px; /* Ajoute un espace sous le logo */
 }
 
 .form-check-label {

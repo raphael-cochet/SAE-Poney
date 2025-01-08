@@ -14,12 +14,12 @@
     <div class="container-fluid vh-100 d-flex align-items-center">
         <div class="row w-100">
             <div class="col-md-6 d-flex justify-content-start align-items-stretch position-relative" style="padding: 0;">
-                <img src="{{ url_for('static', filename='images/ph_table_large.png') }}" alt="My'Stage" class="img-fluid full-height">
-                <h2 class="overlay-text">My'Stage</h2>
+                <img src="{{ url_for('static', filename='images/image_connexion.png') }}" alt="My'Stage" class="img-fluid full-height">
+                <h2 class="overlay-text">Grand galop</h2>
             </div>
             <div class="col-md-6 d-flex justify-content-center align-items-center">
                 <div class="text-center">
-                    <img src="{{ url_for('static', filename='images/logo_iut.png') }}" alt="IUT Orléans" class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Grand Galop" class="logo">
                     <h2 class="create-title">Créer un compte</h2>
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -77,7 +77,7 @@
                         </div>                        
                         <div class="create-account-btn">
                             <button type="submit" class="btn-create-account btn btn-block">Créer mon compte</button>
-                            <p class="p-deja-compte"> Vous avez déjà un compte ? <a  class="deja-compte" href="{{ url_for('connexion') }}">Connectez-vous !</a></p>
+                            <p class="p-deja-compte"> Vous avez déjà un compte ? <a  class="deja-compte" href="{{ url_for('login') }}">Connectez-vous !</a></p>
                         </div>                        
                     </form>
                 </div>

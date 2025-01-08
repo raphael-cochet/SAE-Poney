@@ -22,6 +22,12 @@ body {
     object-fit: cover;
 }
 
+.text-center img {
+    max-width: 150px; /* Réduit la largeur maximale du logo */
+    height: auto; /* Conserve les proportions du logo */
+    margin-bottom: 20px; /* Ajoute un espace sous le logo */
+}
+
 .overlay-text {
     position: absolute;
     top: 50%;
@@ -43,7 +49,7 @@ body {
 }
 
 .btn-create-account {
-    background-color: #880062;
+    background-color: #14245A;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -52,7 +58,7 @@ body {
 }
 
 .btn-create-account:hover {
-    background-color: #55043f;
+    background-color: #1e3583;
     color: white;
 }
 
@@ -60,16 +66,7 @@ body {
     margin-top: 20px;
 }
 
-.link-violet {
-    color: #880062;
-    font-weight: bold;
-}
 
-.link-violet:hover {
-    color: #880062;
-    text-decoration: underline;
-    margin-top: 30px;
-}
 
 .form-check {
     margin-bottom: 30px; 
@@ -82,10 +79,7 @@ body {
     margin-right: 0.9rem;
 }
 
-.form-check-input:checked {
-    background-color: #880062;
-    border-color: #880062;
-}
+
 
 .form-check-input:focus {
     box-shadow: 0 0 0 0.2rem rgba(105, 34, 86, 0.5);
@@ -95,12 +89,13 @@ body {
 }
 
 .deja-compte{
-    color: #55043f;
+    color: #14245A;
     margin-top: 20px;
 
 
 }
 .deja-compte:hover{
-    color: #360228;
+    color: #1e3583;
+    text-decoration: underline;
 
 }
