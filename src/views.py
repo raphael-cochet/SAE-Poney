@@ -1,6 +1,7 @@
 from flask import render_template, url_for
 from .app import app, db
 
+
 @app.route("/")
 def home():
     return render_template(
@@ -8,6 +9,7 @@ def home():
         title="Accueil",
         search_route=url_for('home')
     )
+
 
 
 @app.route('/les-cours')
@@ -21,3 +23,4 @@ def planning():
 @app.route('/les-poneys')
 def les_poneys():
     return render_template('les_poneys.html')
+
