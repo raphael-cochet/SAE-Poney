@@ -1,8 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 from flask_login import UserMixin
-
-db = SQLAlchemy()
+from .app import db
 
 class Personne(db.Model, UserMixin):
     __tablename__ = 'personne'
@@ -46,13 +43,13 @@ class Cours(db.Model):
     jourCours = db.Column(db.String(20), nullable=False)
     heureCours = db.Column(db.Time, nullable=False)
     prixCours = db.Column(db.Float, nullable=False)
-    id_moniteur = db.Column(db.Integer, db.ForeignKey('moniteur.idMoniteur'))
+    id_moniteur = db.Column(db.Integer, db.ForeignKey('moniteur.id'))
 
 class Reserver(db.Model):
     __tablename__ = 'reserver'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_cours = db.Column(db.Integer, db.ForeignKey('cours.idCours'))
-    id_client = db.Column(db.Integer, db.ForeignKey('client.idC'))
+    id_client = db.Column(db.Integer, db.ForeignKey('client.id'))
     id_poney = db.Column(db.Integer, db.ForeignKey('poney.idPoney'))
     dateCours = db.Column(db.DateTime, nullable=False)
 
@@ -68,4 +65,4 @@ class Cotisation(db.Model):
     idCotisation = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dateRecCoti = db.Column(db.Date, nullable=False)
     prixCoti = db.Column(db.Float, nullable=False)
-    id_client = db.Column(db.Integer, db.ForeignKey('client.idC'))
+    id_client = db.Column(db.Integer, db.ForeignKey('client.id'))
