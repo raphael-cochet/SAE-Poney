@@ -39,4 +39,51 @@
     </div>
 </div>
 
+<div class="blue-banner">
+    <!-- Les Cours -->
+    <a href="{{ url_for('les_cours') }}" class="banner-item" style="background-image: url('{{ url_for('static', filename='images/pretty_horse.png') }}');">
+      <div class="banner-overlay">
+        <h2>LES COURS</h2>
+      </div>
+    </a>
+  
+    <!-- Planning -->
+    <a href="{{ url_for('planning') }}" class="banner-item" style="background-image: url('{{ url_for('static', filename='images/cowboy_horse.png') }}');">
+      <div class="banner-overlay">
+        <h2>PLANNING</h2>
+      </div>
+    </a>
+  
+    <!-- Les Poneys -->
+    <a href="{{ url_for('les_poneys') }}" class="banner-item" style="background-image: url('{{ url_for('static', filename='images/funny_horse.png') }}');">
+      <div class="banner-overlay">
+        <h2>LES PONEYS</h2>
+      </div>
+    </a>
+</div>
+
+<div class="informations-pratiques">
+    <h2>Informations pratiques</h2>
+    <div class="informations-content">
+      <div class="horaires">
+        <p><strong>Horaires secrétariat :</strong></p>
+        <ul>
+          <li>Lundi à vendredi : 10h00 - 12h30 et 13h30 - 19h30</li>
+          <li>Samedi : 8h30 - 12h30 et 13h30 - 18h00</li>
+          <li>Dimanche : 9h00 - 12h30 (en mai, juin et septembre)</li>
+        </ul>
+      </div>
+      <div class="coordonnees">
+        <p><strong>Coordonnées :</strong></p>
+        <p>
+          Château de la Source, 45100 Orléans<br>
+          Tel : 01.45.01.20.06<br>
+          E-mail : <a href="mailto:accueil@sep-paris.fr">grandgalop@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  
+
 {% endblock %}

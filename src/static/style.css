@@ -193,3 +193,111 @@ html {
     margin-top: auto; /* Force le footer à occuper le bas de page */
     flex-shrink: 0;
 }
+
+.blue-banner {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #14245A; /* Couleur bleu foncé */
+    padding: 20px 0; /* Espace autour des éléments */
+}
+
+.banner-item {
+    position: relative;
+    flex: 1;
+    height: 300px; /* Hauteur des éléments */
+    margin: 0 10px; /* Espacement entre les colonnes */
+    background-size: cover;
+    background-position: center;
+    border-radius: 5px; /* Ajoute des coins arrondis */
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Effets pour le survol */
+}
+
+.banner-item:hover {
+    transform: scale(1.05); /* Zoom léger */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Ombre élégante */
+    z-index: 2; /* Place l'image sur les autres pour éviter les chevauchements */
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Couche sombre semi-transparente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease; /* Effet de transition pour le hover */
+}
+
+.banner-item:hover .banner-overlay {
+    background-color: rgba(0, 0, 0, 0.3); /* Éclaircit légèrement au survol */
+}
+
+.informations-pratiques {
+    background-color: #ffffff; /* Fond blanc */
+    padding: 50px 20px; /* Espace intérieur */
+    text-align: center; /* Centrer le texte */
+    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1); /* Ombre subtile pour séparer visuellement */
+}
+
+.informations-pratiques h2 {
+    font-size: 2rem; /* Taille du titre */
+    color: #14245A; /* Couleur bleu foncé */
+    margin-bottom: 30px; /* Espace sous le titre */
+    font-weight: bold;
+}
+
+.informations-content {
+    display: flex;
+    flex-direction: column; /* Empile les éléments en colonne sur petits écrans */
+    align-items: center;
+    gap: 30px; /* Espace entre les colonnes */
+}
+
+@media (min-width: 768px) {
+    .informations-content {
+        flex-direction: row; /* Affiche les éléments côte à côte sur écrans larges */
+        justify-content: center; /* Centre les colonnes horizontalement */
+    }
+}
+
+.horaires, .coordonnees {
+    flex: 1; /* Les deux colonnes prennent la même largeur */
+    max-width: 400px; /* Limite la largeur pour éviter que le texte soit trop étendu */
+    color: #14245A; /* Texte en bleu foncé */
+}
+
+.horaires p, .coordonnees p {
+    font-size: 1.1rem; /* Taille du texte */
+    line-height: 1.6; /* Espacement entre les lignes */
+    margin: 0 0 10px; /* Espace sous chaque paragraphe */
+}
+
+.horaires ul {
+    list-style-type: none; /* Supprime les puces de la liste */
+    padding: 0;
+    margin: 0;
+}
+
+.horaires ul li {
+    margin-bottom: 10px; /* Espace entre les lignes */
+    font-size: 1rem; /* Taille du texte */
+}
+
+.coordonnees a {
+    color: #1f3788; /* Couleur bleue pour le lien */
+    text-decoration: none; /* Supprime le soulignement */
+}
+
+.coordonnees a:hover {
+    text-decoration: underline; /* Ajoute un soulignement au survol */
+}
