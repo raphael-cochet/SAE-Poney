@@ -23,7 +23,7 @@ def loaddb(filename):
                 'nom': cl['nomP'],
                 'prenom': cl['prenomP'],
                 'mail': cl['mail'],
-                'type': cl['type'],
+                'type': 'client',
                 'poids': cl['poidsC']
             }
             client = Client(**client_data)
@@ -40,8 +40,7 @@ def loaddb(filename):
                 'nom': mo['nomP'],
                 'prenom': mo['prenomP'],
                 'mail': mo['mail'],
-                'type': mo['type'],
-                'specialite': mo['specialite']
+                'type': 'moniteur'
             }
             moniteur = Moniteur(**moniteur_data)
             db.session.add(moniteur)
@@ -50,7 +49,7 @@ def loaddb(filename):
 
     # Création des poneys
     for po in data.get("poneys", []):
-        poney = Poney.query.filter_by(nomPoney=po["nomPoney"]).first()
+        poney = Poney.query.filter_by(idPoney=po["idPoney"]).first()
         if poney is None:
             poney = Poney(**po)
             db.session.add(poney)

@@ -17,7 +17,6 @@ class Personne(db.Model, UserMixin):
 class Moniteur(Personne):
     __tablename__ = 'moniteur'
     id = db.Column(db.Integer, db.ForeignKey('personne.id'), primary_key=True)
-    specialite = db.Column(db.String(100), nullable=True)
     cours = db.relationship('Cours', backref='moniteur')
     
     __mapper_args__ = {
@@ -37,7 +36,7 @@ class Client(Personne):
 
 class Cours(db.Model):
     __tablename__ = 'cours'
-    idCours = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idCours = db.Column(db.Integer, primary_key=True)
     nbPersMax = db.Column(db.Integer, nullable=False)
     dureeCours = db.Column(db.Integer, nullable=False)  # en heures
     jourCours = db.Column(db.String(20), nullable=False)
@@ -47,7 +46,7 @@ class Cours(db.Model):
 
 class Reserver(db.Model):
     __tablename__ = 'reserver'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     id_cours = db.Column(db.Integer, db.ForeignKey('cours.idCours'))
     id_client = db.Column(db.Integer, db.ForeignKey('client.id'))
     id_poney = db.Column(db.Integer, db.ForeignKey('poney.idPoney'))
@@ -55,14 +54,14 @@ class Reserver(db.Model):
 
 class Poney(db.Model):
     __tablename__ = 'poney'
-    idPoney = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idPoney = db.Column(db.Integer, primary_key=True)
     nomPoney = db.Column(db.String(100), nullable=False)
     poidsMaxPoney = db.Column(db.Float, nullable=False)
     reservations = db.relationship('Reserver', backref='poney')
 
 class Cotisation(db.Model):
     __tablename__ = 'cotisation'
-    idCotisation = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idCotisation = db.Column(db.Integer, primary_key=True)
     dateRecCoti = db.Column(db.Date, nullable=False)
     prixCoti = db.Column(db.Float, nullable=False)
     id_client = db.Column(db.Integer, db.ForeignKey('client.id'))

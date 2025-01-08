@@ -3,28 +3,24 @@ clients:
     nomP: "Doe"
     prenomP: "Jane"
     mail: "jane.doe@email.com"
-    type: "client"
     poidsC: 55.0
 
   - id: 2
     nomP: "Smith"
     prenomP: "Emily"
     mail: "emily.smith@email.com"
-    type: "client"
     poidsC: 60.0
 
   - id: 3
     nomP: "Martin"
     prenomP: "Lucas"
     mail: "lucas.martin@email.com"
-    type: "client"
     poidsC: 75.0
 
   - id: 4
     nomP: "Dubois"
     prenomP: "Sophie"
     mail: "sophie.dubois@email.com"
-    type: "client"
     poidsC: 52.0
 
 
@@ -33,29 +29,21 @@ moniteurs:
     nomP: "Dupont"
     prenomP: "Pierre"
     mail: "pierre.dupont@equitation.com"
-    type: "moniteur"
-    specialite: "Dressage"
   
   - id: 6
     nomP: "Garcia"
     prenomP: "Maria"
     mail: "maria.garcia@equitation.com"
-    type: "moniteur"
-    specialite: "Saut d'obstacles"
   
   - id: 7
     nomP: "Lambert"
     prenomP: "Jean"
     mail: "jean.lambert@equitation.com"
-    type: "moniteur"
-    specialite: "Équitation western"
   
   - id: 8
     nomP: "Moreau"
     prenomP: "Claire"
     mail: "claire.moreau@equitation.com"
-    type: "moniteur"
-    specialite: "Voltige"
 
 poneys:
   - idPoney: 1
