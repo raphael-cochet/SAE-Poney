@@ -1,0 +1,303 @@
+
+body {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+
+}
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: white;
+    padding: 0 20px;
+}
+
+.navbar-brand img {
+    height: 50px; /* Taille du logo */
+    margin-top: 15px; /* Ajoute un peu d'espace en haut */
+}
+
+/* Ajoute du padding top sur les liens de navigation */
+.navbar-nav .nav-link {
+    color: #14245A !important;
+    text-decoration: none;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-right: 50px;
+    margin-top: 15px; /* Espace en haut des liens */
+}
+
+
+/* Style par défaut du bouton */
+.btn-connexion {
+    background-color: #14245A; /* Couleur de fond par défaut */
+    color: white; /* Couleur du texte par défaut */
+    border: none;
+    padding: 10px 20px;
+    margin-left: auto; /* Pousse le bouton vers la droite */
+    margin-top: 15px; /* Ajoute un peu d'espace en haut */
+}
+
+/* Style au survol du bouton */
+.btn-connexion:hover {
+    background-color: #1f3788; /* Couleur violet plus clair au survol */
+    color: white; /* Reste blanc */
+}
+
+/* Ajuste le conteneur de la navbar pour un bon alignement */
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    color: #14245A;
+    text-decoration: none;
+    margin-right: 30px;
+    margin-left: 30px; 
+    font-size: 18px;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+.link-commencer::after {
+    content: ' ➔';
+    margin-left: 5px;
+}
+
+.list-inline {
+    margin: 20px;
+}
+
+.list-inline-item {
+    margin-right: 40px;
+    margin-left: 40px;
+}
+
+/* Forcer le bouton à se positionner à droite */
+.ml-auto {
+    margin-left: auto;
+}
+
+.custom-box {
+    background-image: url('/static/images/ph_table_banner.png');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 80px;
+    position: relative;
+    height: 400px; /* Ajustez la hauteur de la bannière */
+    width: 100%; /* Permet d'occuper toute la largeur */
+    margin: 0; /* Supprime les marges externes */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-top: 0; /* Évite un espace au-dessus */
+    border-radius: 0; /* Enlevez la bordure arrondie si nécessaire */
+}
+
+.custom-box h1{
+    margin: 0; /* Supprime les marges par défaut */
+    position: relative; /* Pour le z-index si besoin */
+    z-index: 2; /* S'assurer que le texte reste au-dessus */
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 50px;
+}
+
+.container {
+    max-width: 100% !important;
+}
+
+.container .row {
+    margin-top: 50px;
+}
+
+@media (min-width: 768px) {
+    .container .row {
+        justify-content: space-between; /* Espace maximal entre les colonnes */
+    }
+}
+
+@media (min-width: 768px) {
+    .offset-md-1 {
+      margin-left: 0; /* Enlève le margin-left */
+    }
+  }
+
+
+.container .col-md-5 h2 {
+    font-weight: bold;
+    margin-bottom: 50px;
+    color: #14245A;
+}
+
+
+.container .col-md-5 p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #14245A;
+    margin-bottom: 50px;
+    max-width: 80%; /* Réduit la largeur du texte pour qu'il ne prenne pas toute la largeur */
+    margin: 0 auto; /* Centre le texte */
+    
+}
+
+.container .col-md-5 img{
+    margin-top: 50px;
+}
+
+.container .btn-primary {
+    background-color: #14245A;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 40px;
+}
+
+.container .btn-primary:hover {
+    background-color: #1f3788;
+    color: white;
+}
+
+
+
+
+
+
+.footer, .custom-box {
+    background-color: #14245A;
+    color: white;
+}
+
+.footer {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    margin-top: auto; /* Force le footer à occuper le bas de page */
+    flex-shrink: 0;
+}
+
+.blue-banner {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #14245A; /* Couleur bleu foncé */
+    padding: 20px 0; /* Espace autour des éléments */
+}
+
+.banner-item {
+    position: relative;
+    flex: 1;
+    height: 300px; /* Hauteur des éléments */
+    margin: 0 10px; /* Espacement entre les colonnes */
+    background-size: cover;
+    background-position: center;
+    border-radius: 5px; /* Ajoute des coins arrondis */
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Effets pour le survol */
+}
+
+.banner-item:hover {
+    transform: scale(1.05); /* Zoom léger */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Ombre élégante */
+    z-index: 2; /* Place l'image sur les autres pour éviter les chevauchements */
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Couche sombre semi-transparente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease; /* Effet de transition pour le hover */
+}
+
+.banner-item:hover .banner-overlay {
+    background-color: rgba(0, 0, 0, 0.3); /* Éclaircit légèrement au survol */
+}
+
+.informations-pratiques {
+    background-color: #ffffff; /* Fond blanc */
+    padding: 50px 20px; /* Espace intérieur */
+    text-align: center; /* Centrer le texte */
+    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1); /* Ombre subtile pour séparer visuellement */
+}
+
+.informations-pratiques h2 {
+    font-size: 2rem; /* Taille du titre */
+    color: #14245A; /* Couleur bleu foncé */
+    margin-bottom: 30px; /* Espace sous le titre */
+    font-weight: bold;
+}
+
+.informations-content {
+    display: flex;
+    flex-direction: column; /* Empile les éléments en colonne sur petits écrans */
+    align-items: center;
+    gap: 30px; /* Espace entre les colonnes */
+}
+
+@media (min-width: 768px) {
+    .informations-content {
+        flex-direction: row; /* Affiche les éléments côte à côte sur écrans larges */
+        justify-content: center; /* Centre les colonnes horizontalement */
+    }
+}
+
+.horaires, .coordonnees {
+    flex: 1; /* Les deux colonnes prennent la même largeur */
+    max-width: 400px; /* Limite la largeur pour éviter que le texte soit trop étendu */
+    color: #14245A; /* Texte en bleu foncé */
+}
+
+.horaires p, .coordonnees p {
+    font-size: 1.1rem; /* Taille du texte */
+    line-height: 1.6; /* Espacement entre les lignes */
+    margin: 0 0 10px; /* Espace sous chaque paragraphe */
+}
+
+.horaires ul {
+    list-style-type: none; /* Supprime les puces de la liste */
+    padding: 0;
+    margin: 0;
+}
+
+.horaires ul li {
+    margin-bottom: 10px; /* Espace entre les lignes */
+    font-size: 1rem; /* Taille du texte */
+}
+
+.coordonnees a {
+    color: #1f3788; /* Couleur bleue pour le lien */
+    text-decoration: none; /* Supprime le soulignement */
+}
+
+.coordonnees a:hover {
+    text-decoration: underline; /* Ajoute un soulignement au survol */
+}

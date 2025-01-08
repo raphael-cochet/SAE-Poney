@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My'Stage{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% endblock %}
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo IUT" class="d-inline-block align-top">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item active">
+                        
+                            <a class="nav-link" href="{{ url_for('home') }}">Accueil</a>
+                            <a class="nav-link" href="{{ url_for('home') }}">Les cours </a>
+                            <a class="nav-link" href="{{ url_for('home') }}">Nos Poneys </a>
+                            <a class="nav-link" href="{{ url_for('home') }}">L'équipe </a>
+
+                    </li>
+                    {% block additional_nav %}
+                    {% endblock %}
+                </ul>
+            </div>
+
+
+            <a class="btn btn-connexion ml-auto" href="#" role="button">Connexion</a>
+            
+
+
+        </div>
+    </nav>
+</header>
+
+{% block content %}
+<!-- Le contenu de chaque page s'insérera ici -->
+{% endblock %}
+
+
+<footer class="footer ">
+    <div class="footer-content  text-center">
+        <ul class="list-inline">
+            <li class="list-inline-item"><a href="#" class="text-white">À propos</a></li>
+            <li class="list-inline-item"><a href="#" class="text-white">Contactez-nous</a></li>
+            <li class="list-inline-item"><a href="#" class="text-white">Mentions légales</a></li>
+            <li class="list-inline-item"><a href="#" class="text-white">Politique de confidentialité</a></li>
+        </ul>
+
+        <p class="text-muted">&copy; 2024 - My'Stage - Tous droits réservés.</p>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
