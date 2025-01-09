@@ -113,6 +113,10 @@ def les_cours():
 def planning():
     return render_template('planning.html')
 
-@app.route('/les-poneys')
-def les_poneys():
-    return render_template('les_poneys.html')
+@app.route('/poneys')
+def les_poneys(): 
+    return render_template(
+        "les_poneys.html",
+        title="Les Poneys",
+        search_route=url_for('les_poneys')
+    )
