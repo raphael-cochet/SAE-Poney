@@ -1,0 +1,101 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter-VariableFont_opsz,wght.woff2') format('woff2'),
+         url('../fonts/Inter-VariableFont_opsz,wght.woff') format('woff'),
+         url('../fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+.full-height {
+    height: 100vh;
+    object-fit: cover;
+}
+
+.text-center img {
+    max-width: 150px; /* Réduit la largeur maximale du logo */
+    height: auto; /* Conserve les proportions du logo */
+    margin-bottom: 20px; /* Ajoute un espace sous le logo */
+}
+
+.overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 6rem;
+}
+
+.logo {
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.create-title {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.btn-create-account {
+    background-color: #14245A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+    margin-top: 40px;
+}
+
+.btn-create-account:hover {
+    background-color: #1e3583;
+    color: white;
+}
+
+.already-account {
+    margin-top: 20px;
+}
+
+
+
+.form-check {
+    margin-bottom: 30px; 
+}
+
+.form-check-input {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    margin-right: 0.9rem;
+}
+
+
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(105, 34, 86, 0.5);
+}
+.p-deja-compte{
+    margin-top: 20px;
+}
+
+.deja-compte{
+    color: #14245A;
+    margin-top: 20px;
+
+
+}
+.deja-compte:hover{
+    color: #1e3583;
+    text-decoration: underline;
+
+}
