@@ -359,3 +359,33 @@ html {
 .coordonnees a:hover {
     text-decoration: underline; /* Ajoute un soulignement au survol */
 }
+
+
+.Titre-cours {
+    font-size: 200px;
+}
+
+.blue-banner-cours {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #14245A; /* Couleur bleu foncé */
+    padding: 20px 30px; /* Espace autour des éléments */
+}
+
+.blue-banner-cours img {
+    width: 300px; /* Augmente la taille de l'image */
+    height: auto; /* Conserve les proportions */
+    margin-right: 30px; /* Ajoute un espace plus grand entre l'image et le texte */
+}
+
+.blue-banner-cours .text-right {
+    color: white;
+    text-align: left;
+}
+
+.blue-banner-cours .btn-light {
+    background-color: #ffffff; /* Bouton de couleur claire */
+    color: #14245A; /* Texte du bouton en bleu foncé */
+}
+
