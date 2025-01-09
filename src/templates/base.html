@@ -37,10 +37,11 @@
                 </ul>
             </div>
 
-
-            <a class="btn btn-connexion ml-auto" href="#" role="button">Connexion</a>
-            
-
+            {% if current_user.is_authenticated %}
+                <a class="btn btn-connexion ml-auto" href="{{ url_for('logout') }}" role="button">Déconnexion</a>
+            {% else %}
+                <a class="btn btn-connexion ml-auto" href="{{ url_for('login') }}" role="button">Connexion</a>
+            {% endif %}
 
         </div>
     </nav>

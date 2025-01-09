@@ -47,29 +47,16 @@
                             <input type="text" class="form-control" id="prenom" name="prenom" placeholder="Votre prénom" required>
                         </div>
                         <div class="form-group text-left">
-                            <label for="fonction">Fonction</label>
-                            <select class="form-control" id="fonction" name="fonction" required>
-                                <option value="" disabled selected>Choisissez votre fonction</option>
-                                <option value="Responsable">Responsable de formation</option>
-                                <option value="Enseignant">Enseignant</option>
-                                <option value="Secretaire">Secrétaire</option>
+                            <label for="type">Rôle</label>
+                            <select class="form-control" id="type" name="type" required>
+                                <option value="" disabled selected>Choisissez votre rôle</option>
+                                <option value="client">Client</option>
+                                <option value="moniteur">Professeur</option>
                             </select>
                         </div>
                         <div class="form-group text-left">
-                            <label for="departement">Département</label>
-                            <select class="form-control" id="departement" name="departement" required>
-                                <option value="" disabled selected>Choisissez votre département</option>
-                                <option value="informatique">Informatique</option>
-                                <option value="chimie">Chimie</option>
-                                <option value="gea">GEA</option>
-                                <option value="qlio">QLIO</option>
-                                <option value="mt2e">MT2E</option>
-                                <option value="gmp">GMP</option>
-                            </select>
-                        </div>                        
-                        <div class="form-group text-left">
-                            <label for="identifiant">Identifiant</label>
-                            <input type="text" class="form-control" id="identifiant" name="identifiant" placeholder="Votre identifiant" required>
+                            <label for="identifiant">Email</label>
+                            <input type="email" class="form-control" id="identifiant" name="identifiant" placeholder="Votre email" required>
                         </div>
                         <div class="form-group text-left"> 
                             <label for="password">Mot de passe</label>
@@ -77,9 +64,9 @@
                         </div>                        
                         <div class="create-account-btn">
                             <button type="submit" class="btn-create-account btn btn-block">Créer mon compte</button>
-                            <p class="p-deja-compte"> Vous avez déjà un compte ? <a  class="deja-compte" href="{{ url_for('login') }}">Connectez-vous !</a></p>
-                        </div>                        
+                        </div>
                     </form>
+
                 </div>
             </div>
         </div>

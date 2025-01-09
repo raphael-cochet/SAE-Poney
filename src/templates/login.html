@@ -26,12 +26,13 @@
                     <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Grand Galop" class="logo">
                     <h2 class="login-title">Connectez-vous !</h2>
                     
-                    <!-- Section pour afficher les messages flash en cas d'erreur -->
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
-                            <div class="alert alert-danger" role="alert">
+                            <div>
                                 {% for category, message in messages %}
-                                    <p>{{ message }}</p>
+                                    <div class="alert alert-{{ category }}" role="alert">
+                                        {{ message }}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -39,7 +40,7 @@
 
                     <form method="POST" action="{{ url_for('login') }}">
                         <div class="form-group text-left">
-                            <label for="identifiant">Identifiant</label>
+                            <label for="identifiant">Identifiant (email)</label>
                             <input type="text" name="identifiant" class="form-control" id="identifiant" placeholder="Identifiant" required>
                         </div>
                         <div class="form-group text-left">

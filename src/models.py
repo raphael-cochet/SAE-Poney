@@ -1,12 +1,13 @@
 from flask_login import UserMixin
 from .app import db
 
-class Personne(db.Model, UserMixin):
+class Personne(UserMixin, db.Model):
     __tablename__ = 'personne'
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
     mail = db.Column(db.String(100), unique=True, nullable=False)
+    mot_de_passe = db.Column(db.String(256))
     type = db.Column(db.String(50))
     
     __mapper_args__ = {
