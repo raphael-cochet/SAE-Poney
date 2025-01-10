@@ -120,3 +120,11 @@ def les_poneys():
         title="Les Poneys",
         search_route=url_for('les_poneys')
     )
+
+@app.route('/equipe')
+def equipe(): 
+    return render_template(
+        "equipe.html",
+        title="L'équipe",
+        search_route=url_for('equipe')
+    )

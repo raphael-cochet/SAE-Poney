@@ -157,11 +157,59 @@ html {
 }
 
 /* Appliquer le texte au-dessus du voile */
-.custom-box, .custom-box-poney {
+.custom-box, .custom-box-equipe {
     position: relative;
     z-index: 2;
 }
-.custom-box-poney h1{
+.custom-box-equipe h1{
+    margin: 0; /* Supprime les marges par défaut */
+    position: relative; /* Pour le z-index si besoin */
+    z-index: 2; /* S'assurer que le texte reste au-dessus */
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 100px;
+}
+
+/* ====== TODO A MODIFIER ======*/
+
+.custom-box-equipe {
+    position: relative;
+    height: 400px; /* Ajustez la hauteur de la bannière */
+    width: 100%; /* Permet d'occuper toute la largeur */
+    margin: 0; /* Supprime les marges externes */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 80px;
+    background-image: url('/static/images/equipe.jpg');
+    background-size: cover;
+    background-position: center;
+    margin-top: 0; /* Évite un espace au-dessus */
+    border-radius: 0; /* Enlevez la bordure arrondie si nécessaire */
+}
+
+.custom-box-equipe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3); /* Voile noir avec une opacité de 0.3 */
+    border-radius: inherit; /* Conserver les bordures arrondies */
+    z-index: 1;
+}
+
+/* Appliquer le texte au-dessus du voile */
+.custom-box, .custom-box-equipe {
+    position: relative;
+    z-index: 2;
+}
+.custom-box-equipe h1{
     margin: 0; /* Supprime les marges par défaut */
     position: relative; /* Pour le z-index si besoin */
     z-index: 2; /* S'assurer que le texte reste au-dessus */
