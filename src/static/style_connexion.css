@@ -128,14 +128,9 @@ body {
     margin-top: 4px;
 } 
 
-.link-violet {
-    color: #14245A;
-}
 
-.link-violet:hover {
-    color: #14245A;
-    text-decoration: underline;
-}
+
+
 
 img.img-fluid {
     margin-top: 0;
@@ -204,3 +199,5 @@ img.img-fluid {
 .mt-custom {
     margin-top: 20px;
 }
+
+
