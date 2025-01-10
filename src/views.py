@@ -107,7 +107,7 @@ def logout():
 
 @app.route('/les-cours')
 def les_cours():
-    return render_template('les_cours.html')
+    return render_template('page_cours.html')
 
 @app.route('/planning')
 def planning():
