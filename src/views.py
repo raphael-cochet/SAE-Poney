@@ -1,8 +1,11 @@
 from flask import render_template, session, url_for, request, redirect, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from .models import Client, Moniteur, Poney, Cours, Reserver
+from .models import Client, Moniteur, Poney, Cours, Reserver, CoursRegulier, CoursParticulier, Cotisation
 from .app import app, db
+from sqlalchemy import or_
+from datetime import datetime, timedelta
+from flask import jsonify
 
 @app.route("/")
 def home():
@@ -131,49 +134,55 @@ def creer_cours():
         return redirect(url_for('home'))
         
     if request.method == 'POST':
-        nb_max = request.form.get('nb_max')
-        duree = request.form.get('duree')
-        prix = request.form.get('prix')
-        type_cours = request.form.get('type_cours')
-        
-        if type_cours == 'regulier':
-            jour = request.form.get('jour')
-            heure = datetime.strptime(request.form.get('heure'), '%H:%M').time()
-            
-            nouveau_cours = Cours(
-                nbPersMax=nb_max,
-                dureeCours=duree,
-                jourCours=jour,
-                heureCours=heure,
-                prixCours=prix,
-                id_moniteur=current_user.id
-            )
-            
-        elif type_cours == 'particulier':
-            date = datetime.strptime(request.form.get('date'), '%Y-%m-%d')
-            heure = datetime.strptime(request.form.get('heure'), '%H:%M').time()
-            date_complete = datetime.combine(date, heure)
-            
-            # Créer un cours et sa réservation directement
-            nouveau_cours = Cours(
-                nbPersMax=1,  # Cours particulier = 1 personne max
-                dureeCours=duree,
-                jourCours=date.strftime('%A'),  # Jour de la semaine
-                heureCours=heure,
-                prixCours=prix,
-                id_moniteur=current_user.id
-            )
-            
         try:
+            duree = int(request.form.get('duree'))
+            nb_max = int(request.form.get('nb_max'))
+            prix = float(request.form.get('prix'))
+            heure = datetime.strptime(request.form.get('heure'), '%H:%M').time()
+            type_cours = request.form.get('type_cours')
+            
+            cours_data = {
+                'dureeCours': duree,
+                'heureCours': heure,
+                'prixCours': prix,
+                'id_moniteur': current_user.id
+            }
+            
+            if type_cours == 'regulier':
+                cours_data['nbPersMax'] = nb_max
+                jour = request.form.get('jour')
+                nouveau_cours = CoursRegulier(
+                    **cours_data,
+                    jourCours=jour
+                )
+                
+            elif type_cours == 'particulier':
+                cours_data['nbPersMax'] = 1
+                date = datetime.strptime(request.form.get('date'), '%Y-%m-%d')
+                date_complete = datetime.combine(date, heure)
+                id_client = int(request.form.get('client'))
+                id_poney = int(request.form.get('poney'))
+                
+                nouveau_cours = CoursParticulier(
+                    **cours_data,
+                    dateCours=date_complete,
+                    id_client=id_client,
+                    id_poney=id_poney
+                )
+            
             db.session.add(nouveau_cours)
             db.session.commit()
             flash('Cours créé avec succès!', 'success')
             return redirect(url_for('planning'))
+            
         except Exception as e:
             db.session.rollback()
             flash(f'Erreur lors de la création du cours: {str(e)}', 'danger')
             
-    return render_template('creer_cours.html')
+    clients = Client.query.all()
+    poneys = Poney.query.all()
+    return render_template('creer_cours.html', clients=clients, poneys=poneys)
+
 
 @app.route('/inscription_cours/<int:cours_id>', methods=['POST'])
 @login_required
@@ -182,31 +191,37 @@ def inscription_cours(cours_id):
         flash('Accès réservé aux clients', 'danger')
         return redirect(url_for('planning'))
         
-    cours = Cours.query.get_or_404(cours_id)
+    cours = CoursRegulier.query.get_or_404(cours_id)
     
-    # Vérifier si le cours n'est pas complet
-    nb_inscrits = Reserver.query.filter_by(id_cours=cours_id).count()
+    # Vérifier si le cours n'est pas complet pour la prochaine séance
+    today = datetime.today()
+    prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+    
+    nb_inscrits = Reserver.query.filter_by(
+        id_cours=cours_id,
+        dateCours=prochaine_date
+    ).count()
+    
     if nb_inscrits >= cours.nbPersMax:
-        flash('Ce cours est complet', 'danger')
+        flash('Ce cours est complet pour la prochaine séance', 'danger')
         return redirect(url_for('planning'))
-        
-    # Pour un cours régulier, créer la prochaine occurrence
-    if cours.jourCours:  # Si c'est un cours régulier
-        today = datetime.today()
-        # Trouver la prochaine occurrence du jour
-        jours = {'Lundi': 0, 'Mardi': 1, 'Mercredi': 2, 'Jeudi': 3, 'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6}
-        jour_cours = jours[cours.jourCours]
-        jours_a_ajouter = (jour_cours - today.weekday() + 7) % 7
-        prochaine_date = today + timedelta(days=jours_a_ajouter)
-        date_cours = datetime.combine(prochaine_date.date(), cours.heureCours)
-    else:  # Cours particulier
-        date_cours = datetime.combine(cours.date, cours.heureCours)
     
+    # Vérifier si le client n'est pas déjà inscrit à ce cours
+    deja_inscrit = Reserver.query.filter_by(
+        id_cours=cours_id,
+        id_client=current_user.id,
+        dateCours=prochaine_date
+    ).first()
+    
+    if deja_inscrit:
+        flash('Vous êtes déjà inscrit à ce cours', 'danger')
+        return redirect(url_for('planning'))
+    
+    # TODO: Ajouter la sélection du poney lors de l'inscription
     reservation = Reserver(
         id_cours=cours_id,
         id_client=current_user.id,
-        dateCours=date_cours
-        # id_poney sera assigné plus tard ou lors de la réservation
+        dateCours=prochaine_date
     )
     
     try:
@@ -222,12 +237,26 @@ def inscription_cours(cours_id):
 
 @app.route('/planning')
 def planning():
-    cours_reguliers = Cours.query\
-        .filter(Cours.jourCours.isnot(None))\
-        .order_by(Cours.jourCours, Cours.heureCours)\
+    # Récupérer tous les cours réguliers
+    cours_reguliers = CoursRegulier.query\
+        .order_by(CoursRegulier.jourCours, CoursRegulier.heureCours)\
         .all()
     
-    # Conversion en dictionnaire pour le JSON
+    # Récupérer les cours particuliers pour la semaine à venir
+    today = datetime.today()
+    une_semaine = today + timedelta(days=7)
+    
+    cours_particuliers = CoursParticulier.query\
+        .filter(CoursParticulier.dateCours.between(today, une_semaine))\
+        .order_by(CoursParticulier.dateCours)\
+        .all()
+    
+    # Récupérer les réservations pour les cours réguliers de la semaine
+    reservations = Reserver.query\
+        .filter(Reserver.dateCours.between(today, une_semaine))\
+        .all()
+    
+    # Formatage pour le JSON
     cours_reguliers_json = [{
         'idCours': c.idCours,
         'jourCours': c.jourCours,
@@ -238,42 +267,51 @@ def planning():
         'moniteur': {
             'prenom': c.moniteur.prenom,
             'nom': c.moniteur.nom
-        }
+        },
+        'reservations': [
+            r for r in reservations if r.id_cours == c.idCours
+        ]
     } for c in cours_reguliers]
     
-    # Récupérer les cours particuliers pour la semaine à venir
-    today = datetime.today()
-    une_semaine = today + timedelta(days=7)
-    
-    cours_particuliers = db.session.query(Cours, Reserver)\
-        .join(Reserver)\
-        .filter(Reserver.dateCours.between(today, une_semaine))\
-        .order_by(Reserver.dateCours)\
-        .all()
-    
-    # Conversion en dictionnaire pour le JSON
-    cours_particuliers_json = [
-        [{
-            'idCours': c.idCours,
-            'heureCours': c.heureCours.strftime('%H:%M'),
-            'dureeCours': c.dureeCours,
-            'prixCours': c.prixCours,
-            'moniteur': {
-                'prenom': c.moniteur.prenom,
-                'nom': c.moniteur.nom
-            }
+    cours_particuliers_json = [{
+        'idCours': c.idCours,
+        'dateCours': c.dateCours.isoformat(),
+        'heureCours': c.heureCours.strftime('%H:%M'),
+        'dureeCours': c.dureeCours,
+        'prixCours': c.prixCours,
+        'moniteur': {
+            'prenom': c.moniteur.prenom,
+            'nom': c.moniteur.nom
         },
-        {
-            'dateCours': r.dateCours.isoformat(),
-            'client': {
-                'prenom': r.client.prenom,
-                'nom': r.client.nom
-            }
-        }] for c, r in cours_particuliers
-    ]
+        'client': {
+            'prenom': c.client.prenom,
+            'nom': c.client.nom
+        } if c.client else None
+    } for c in cours_particuliers]
     
     return render_template(
         'planning.html',
         cours_reguliers=cours_reguliers_json,
         cours_particuliers=cours_particuliers_json
     )
+
+def calculer_prochaine_date(jour_cours, heure_cours):
+    """Calcule la prochaine date pour un cours régulier"""
+    today = datetime.today()
+    jours = {
+        'Lundi': 0, 'Mardi': 1, 'Mercredi': 2,
+        'Jeudi': 3, 'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
+    }
+    jour_cours_num = jours[jour_cours]
+    jours_a_ajouter = (jour_cours_num - today.weekday() + 7) % 7
+    if jours_a_ajouter == 0 and today.time() > heure_cours:
+        jours_a_ajouter = 7
+    prochaine_date = today + timedelta(days=jours_a_ajouter)
+    return datetime.combine(prochaine_date.date(), heure_cours)
+
+
+
+@app.route('/reservations', methods=['GET'])
+def get_reservations():
+    reservations = Reserver.query.all()
+    return jsonify([r.to_dict() for r in reservations])
