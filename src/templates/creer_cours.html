@@ -1,0 +1,154 @@
+<!-- creer_cours.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Créer un cours</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Type de cours</label>
+            <select name="type_cours" class="form-control" id="type_cours">
+                <option value="regulier">Cours régulier</option>
+                <option value="particulier">Cours particulier</option>
+            </select>
+        </div>
+
+        <div id="regulier-fields">
+            <div class="form-group">
+                <label>Jour de la semaine</label>
+                <select name="jour" class="form-control">
+                    <option value="Lundi">Lundi</option>
+                    <option value="Mardi">Mardi</option>
+                    <option value="Mercredi">Mercredi</option>
+                    <option value="Jeudi">Jeudi</option>
+                    <option value="Vendredi">Vendredi</option>
+                    <option value="Samedi">Samedi</option>
+                    <option value="Dimanche">Dimanche</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="particulier-fields" style="display:none;">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Heure</label>
+            <input type="time" name="heure" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Durée (en heures)</label>
+            <input type="number" name="duree" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Prix</label>
+            <input type="number" step="0.01" name="prix" class="form-control" required>
+        </div>
+
+        <div class="form-group" id="nb-max-field">
+            <label>Nombre maximum de participants</label>
+            <input type="number" name="nb_max" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Créer le cours</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('type_cours').addEventListener('change', function() {
+    const regulierFields = document.getElementById('regulier-fields');
+    const particulierFields = document.getElementById('particulier-fields');
+    const nbMaxField = document.getElementById('nb-max-field');
+    
+    if (this.value === 'particulier') {
+        regulierFields.style.display = 'none';
+        particulierFields.style.display = 'block';
+        nbMaxField.style.display = 'none';
+        nbMaxField.querySelector('input').value = '1';
+    } else {
+        regulierFields.style.display = 'block';
+        particulierFields.style.display = 'none';
+        nbMaxField.style.display = 'block';
+        nbMaxField.querySelector('input').value = '';
+    }
+});
+</script>
+{% endblock %}
+
+<!-- planning.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Planning des cours</h2>
+    
+    <h3 class="mt-4">Cours réguliers</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Jour</th>
+                    <th>Heure</th>
+                    <th>Durée</th>
+                    <th>Prix</th>
+                    <th>Places</th>
+                    <th>Moniteur</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cours in cours_reguliers %}
+                <tr>
+                    <td>{{ cours.jourCours }}</td>
+                    <td>{{ cours.heureCours.strftime('%H:%M') }}</td>
+                    <td>{{ cours.dureeCours }}h</td>
+                    <td>{{ cours.prixCours }}€</td>
+                    <td>{{ cours.nbPersMax }}</td>
+                    <td>{{ cours.moniteur.prenom }} {{ cours.moniteur.nom }}</td>
+                    <td>
+                        {% if current_user.is_authenticated and current_user.type == 'client' %}
+                        <form action="{{ url_for('inscription_cours', cours_id=cours.idCours) }}" method="POST">
+                            <button type="submit" class="btn btn-primary btn-sm">S'inscrire</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="mt-4">Cours particuliers</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Durée</th>
+                    <th>Prix</th>
+                    <th>Moniteur</th>
+                    <th>Client</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cours, reservation in cours_particuliers %}
+                <tr>
+                    <td>{{ reservation.dateCours.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ cours.heureCours.strftime('%H:%M') }}</td>
+                    <td>{{ cours.dureeCours }}h</td>
+                    <td>{{ cours.prixCours }}€</td>
+                    <td>{{ cours.moniteur.prenom }} {{ cours.moniteur.nom }}</td>
+                    <td>{{ reservation.client.prenom }} {{ reservation.client.nom }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

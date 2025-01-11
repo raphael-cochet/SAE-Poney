@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Planning des cours</h2>
+
+    {% if current_user.type == 'moniteur' %}
+    <div class="mb-3">
+        <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">Créer un cours</a>
+    </div>
+    {% endif %}
+
+    <div class="filter-buttons mb-3">
+        <button class="btn btn-outline-primary btn-filter active" data-type="all">Tous</button>
+        <button class="btn btn-outline-primary btn-filter" data-type="regular">Cours réguliers</button>
+        <button class="btn btn-outline-primary btn-filter" data-type="particular">Cours particuliers</button>
+    </div>
+
+    <div class="calendar">
+        <div class="calendar-header">
+            <div class="time-column"></div>
+            <div class="day-header">Lundi</div>
+            <div class="day-header">Mardi</div>
+            <div class="day-header">Mercredi</div>
+            <div class="day-header">Jeudi</div>
+            <div class="day-header">Vendredi</div>
+            <div class="day-header">Samedi</div>
+            <div class="day-header">Dimanche</div>
+        </div>
+        <div class="calendar-body">
+            <div class="times">
+                {% for hour in range(8, 20) %}
+                    <div class="time-slot">{{ hour }}:00</div>
+                {% endfor %}
+            </div>
+            <div class="days">
+                {% for day in range(7) %}
+                    <div class="day-column" data-day="{{ day }}">
+                        {% for hour in range(8, 20) %}
+                            <div class="hour-slot"></div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="courseModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle"></h3>
+        <div id="modalContent"></div>
+        {% if current_user.is_authenticated and current_user.type == 'client' %}
+        <form id="inscriptionForm" method="POST" style="display: none;">
+            <button type="submit" class="btn btn-primary mt-3">S'inscrire</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .calendar {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        border: 1px solid #ddd;
+    }
+
+    .time-column {
+        width: 80px;
+        padding-right: 10px;
+        text-align: right;
+    }
+
+    .calendar-header {
+        display: flex;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .day-header {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        border-left: 1px solid #ddd;
+        font-weight: bold;
+    }
+
+    .calendar-body {
+        display: flex;
+    }
+
+    .times {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .time-slot {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .days {
+        display: flex;
+        flex: 1;
+    }
+
+    .day-column {
+        flex: 1;
+        border-left: 1px solid #ddd;
+        position: relative;
+    }
+
+    .hour-slot {
+        height: 60px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .course-regular {
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        background-color: #007bff;
+        color: white;
+        padding: 5px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .course-particular {
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        background-color: #28a745;
+        color: white;
+        padding: 5px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: relative;
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 5px;
+    }
+
+    .close {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+    }
+
+    .btn-filter {
+        margin-right: 10px;
+    }
+</style>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Données des cours depuis le backend
+    const coursReguliers = {{ cours_reguliers|tojson }};
+    const coursParticuliers = {{ cours_particuliers|tojson }};
+
+    // Fonction pour convertir l'heure en position
+    function timeToPosition(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes;
+        const startMinutes = 8 * 60;
+        return ((totalMinutes - startMinutes) / 60) * 60;
+    }
+
+    // Afficher les cours
+    function displayCourses() {
+        // Nettoyer les cours existants
+        document.querySelectorAll('.course-regular, .course-particular').forEach(el => el.remove());
+
+        // Afficher les cours réguliers
+        coursReguliers.forEach(cours => {
+            const dayMap = {
+                'Lundi': 0, 'Mardi': 1, 'Mercredi': 2, 'Jeudi': 3,
+                'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
+            };
+            const dayIndex = dayMap[cours.jourCours];
+            const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
+            
+            const courseDiv = document.createElement('div');
+            courseDiv.className = 'course-regular';
+            courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
+            courseDiv.style.height = `${cours.dureeCours * 60}px`;
+            courseDiv.innerHTML = `
+                ${cours.heureCours} - Cours régulier<br>
+                Moniteur: ${cours.moniteur.prenom}
+            `;
+            courseDiv.dataset.id = cours.idCours;
+            
+            courseDiv.addEventListener('click', () => showCourseDetails(cours, 'regulier'));
+            column.appendChild(courseDiv);
+        });
+
+        // Afficher les cours particuliers
+        coursParticuliers.forEach(([cours, reservation]) => {
+            const date = new Date(reservation.dateCours);
+            const dayIndex = date.getDay() - 1;
+            if (dayIndex >= 0) {
+                const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
+                
+                const courseDiv = document.createElement('div');
+                courseDiv.className = 'course-particular';
+                courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
+                courseDiv.style.height = `${cours.dureeCours * 60}px`;
+                courseDiv.innerHTML = `
+                    ${cours.heureCours} - Cours particulier<br>
+                    Moniteur: ${cours.moniteur.prenom}
+                `;
+                
+                courseDiv.addEventListener('click', () => showCourseDetails(cours, 'particulier', reservation));
+                column.appendChild(courseDiv);
+            }
+        });
+    }
+
+    function showCourseDetails(cours, type, reservation = null) {
+        const modal = document.getElementById('courseModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const inscriptionForm = document.getElementById('inscriptionForm');
+
+        modalTitle.textContent = `Cours ${type}`;
+        
+        let content = '';
+        if (type === 'regulier') {
+            content = `
+                <p>Jour: ${cours.jourCours}</p>
+                <p>Heure: ${cours.heureCours}</p>
+                <p>Durée: ${cours.dureeCours}h</p>
+                <p>Moniteur: ${cours.moniteur.prenom} ${cours.moniteur.nom}</p>
+                <p>Places maximum: ${cours.nbPersMax}</p>
+                <p>Prix: ${cours.prixCours}€</p>
+            `;
+            
+            if (inscriptionForm) {
+                inscriptionForm.style.display = 'block';
+                inscriptionForm.action = `/inscription_cours/${cours.idCours}`;
+            }
+        } else {
+            content = `
+                <p>Date: ${new Date(reservation.dateCours).toLocaleDateString()}</p>
+                <p>Heure: ${cours.heureCours}</p>
+                <p>Durée: ${cours.dureeCours}h</p>
+                <p>Moniteur: ${cours.moniteur.prenom} ${cours.moniteur.nom}</p>
+                <p>Client: ${reservation.client.prenom} ${reservation.client.nom}</p>
+                <p>Prix: ${cours.prixCours}€</p>
+            `;
+            
+            if (inscriptionForm) {
+                inscriptionForm.style.display = 'none';
+            }
+        }
+        
+        modalContent.innerHTML = content;
+        modal.style.display = 'block';
+    }
+
+    // Gestionnaires d'événements pour le modal
+    document.querySelector('.close').addEventListener('click', function() {
+        document.getElementById('courseModal').style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('courseModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Filtres
+    document.querySelectorAll('.btn-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.btn-filter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            const type = this.dataset.type;
+            document.querySelectorAll('.course-regular, .course-particular').forEach(course => {
+                if (type === 'all' || 
+                    (type === 'regular' && course.classList.contains('course-regular')) ||
+                    (type === 'particular' && course.classList.contains('course-particular'))) {
+                    course.style.display = 'block';
+                } else {
+                    course.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Initialiser l'affichage
+    displayCourses();
+});
+</script>
+{% endblock %}
+{% endblock %}
