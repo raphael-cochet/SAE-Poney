@@ -47,24 +47,40 @@ moniteurs:
 
 poneys:
   - idPoney: 1
-    nomPoney: "Caramel"
+    nomPoney: "Aragon"
     poidsMaxPoney: 80.0
 
   - idPoney: 2
-    nomPoney: "Éclair"
+    nomPoney: "Bart"
     poidsMaxPoney: 90.0
 
   - idPoney: 3
-    nomPoney: "Noisette"
+    nomPoney: "Edgar"
     poidsMaxPoney: 70.0
 
   - idPoney: 4
-    nomPoney: "Tornado"
+    nomPoney: "Falco"
     poidsMaxPoney: 85.0
 
   - idPoney: 5
-    nomPoney: "Princesse"
+    nomPoney: "Fleur"
+    poidsMaxPoney: 85.0
+
+  - idPoney: 6
+    nomPoney: "Goss"
     poidsMaxPoney: 65.0
+
+  - idPoney: 7
+    nomPoney: "Lucye"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 8
+    nomPoney: "Mulata"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 9
+    nomPoney: "Zeina"
+    poidsMaxPoney: 80.0
 
 cours:
   - idCours: 1

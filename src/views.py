@@ -1,7 +1,7 @@
 from flask import render_template, session, url_for, request, redirect, flash
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
-from .models import Client, Moniteur
+from .models import Client, Moniteur, Poney
 from .app import app, db
 
 @app.route("/")
@@ -113,10 +113,12 @@ def les_cours():
 def planning():
     return render_template('planning.html')
 
-@app.route('/poneys')
-def les_poneys(): 
+@app.route('/poneys', methods=['GET'])
+def les_poneys():
+    poneys = Poney.query.all()
     return render_template(
         "les_poneys.html",
         title="Les Poneys",
-        search_route=url_for('les_poneys')
+        search_route=url_for('les_poneys'),
+        poneys=poneys
     )
