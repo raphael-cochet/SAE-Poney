@@ -251,48 +251,44 @@ def planning():
         .order_by(CoursParticulier.dateCours)\
         .all()
     
-    # Récupérer les réservations pour les cours réguliers de la semaine
-    reservations = Reserver.query\
-        .filter(Reserver.dateCours.between(today, une_semaine))\
-        .all()
+    # Formatage pour le template
+    cours_reguliers_formated = []
+    for c in cours_reguliers:
+        cours_reguliers_formated.append({
+            'idCours': c.idCours,
+            'jourCours': c.jourCours,
+            'heureCours': c.heureCours.strftime('%H:%M'),
+            'dureeCours': c.dureeCours,
+            'prixCours': c.prixCours,
+            'nbPersMax': c.nbPersMax,
+            'moniteur': {
+                'prenom': c.moniteur.prenom,
+                'nom': c.moniteur.nom
+            }
+        })
     
-    # Formatage pour le JSON
-    cours_reguliers_json = [{
-        'idCours': c.idCours,
-        'jourCours': c.jourCours,
-        'heureCours': c.heureCours.strftime('%H:%M'),
-        'dureeCours': c.dureeCours,
-        'prixCours': c.prixCours,
-        'nbPersMax': c.nbPersMax,
-        'moniteur': {
-            'prenom': c.moniteur.prenom,
-            'nom': c.moniteur.nom
-        },
-        'reservations': [
-            r for r in reservations if r.id_cours == c.idCours
-        ]
-    } for c in cours_reguliers]
-    
-    cours_particuliers_json = [{
-        'idCours': c.idCours,
-        'dateCours': c.dateCours.isoformat(),
-        'heureCours': c.heureCours.strftime('%H:%M'),
-        'dureeCours': c.dureeCours,
-        'prixCours': c.prixCours,
-        'moniteur': {
-            'prenom': c.moniteur.prenom,
-            'nom': c.moniteur.nom
-        },
-        'client': {
-            'prenom': c.client.prenom,
-            'nom': c.client.nom
-        } if c.client else None
-    } for c in cours_particuliers]
+    cours_particuliers_formated = []
+    for c in cours_particuliers:
+        cours_particuliers_formated.append({
+            'idCours': c.idCours,
+            'dateCours': c.dateCours.strftime('%Y-%m-%d'),
+            'heureCours': c.heureCours.strftime('%H:%M'),
+            'dureeCours': c.dureeCours,
+            'prixCours': c.prixCours,
+            'moniteur': {
+                'prenom': c.moniteur.prenom,
+                'nom': c.moniteur.nom
+            },
+            'client': {
+                'prenom': c.client.prenom,
+                'nom': c.client.nom
+            } if c.client else None
+        })
     
     return render_template(
         'planning.html',
-        cours_reguliers=cours_reguliers_json,
-        cours_particuliers=cours_particuliers_json
+        cours_reguliers=cours_reguliers_formated,
+        cours_particuliers=cours_particuliers_formated
     )
 
 def calculer_prochaine_date(jour_cours, heure_cours):

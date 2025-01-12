@@ -210,116 +210,45 @@ document.addEventListener('DOMContentLoaded', function() {
             const dayIndex = dayMap[cours.jourCours];
             const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
             
-            const courseDiv = document.createElement('div');
-            courseDiv.className = 'course-regular';
-            courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
-            courseDiv.style.height = `${cours.dureeCours * 60}px`;
-            courseDiv.innerHTML = `
-                ${cours.heureCours} - Cours régulier<br>
-                Moniteur: ${cours.moniteur.prenom}
-            `;
-            courseDiv.dataset.id = cours.idCours;
-            
-            courseDiv.addEventListener('click', () => showCourseDetails(cours, 'regulier'));
-            column.appendChild(courseDiv);
+            if (column) {
+                const courseDiv = document.createElement('div');
+                courseDiv.className = 'course-regular';
+                courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
+                courseDiv.style.height = `${cours.dureeCours * 60}px`;
+                courseDiv.innerHTML = `
+                    ${cours.heureCours} - Cours régulier<br>
+                    Moniteur: ${cours.moniteur.prenom}
+                `;
+                courseDiv.dataset.id = cours.idCours;
+                
+                courseDiv.addEventListener('click', () => showCourseDetails(cours, 'regulier'));
+                column.appendChild(courseDiv);
+            }
         });
 
         // Afficher les cours particuliers
-        coursParticuliers.forEach(([cours, reservation]) => {
-            const date = new Date(reservation.dateCours);
+        coursParticuliers.forEach(cours => {
+            const date = new Date(cours.dateCours);
             const dayIndex = date.getDay() - 1;
             if (dayIndex >= 0) {
                 const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
                 
-                const courseDiv = document.createElement('div');
-                courseDiv.className = 'course-particular';
-                courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
-                courseDiv.style.height = `${cours.dureeCours * 60}px`;
-                courseDiv.innerHTML = `
-                    ${cours.heureCours} - Cours particulier<br>
-                    Moniteur: ${cours.moniteur.prenom}
-                `;
-                
-                courseDiv.addEventListener('click', () => showCourseDetails(cours, 'particulier', reservation));
-                column.appendChild(courseDiv);
-            }
-        });
-    }
-
-    function showCourseDetails(cours, type, reservation = null) {
-        const modal = document.getElementById('courseModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalContent = document.getElementById('modalContent');
-        const inscriptionForm = document.getElementById('inscriptionForm');
-
-        modalTitle.textContent = `Cours ${type}`;
-        
-        let content = '';
-        if (type === 'regulier') {
-            content = `
-                <p>Jour: ${cours.jourCours}</p>
-                <p>Heure: ${cours.heureCours}</p>
-                <p>Durée: ${cours.dureeCours}h</p>
-                <p>Moniteur: ${cours.moniteur.prenom} ${cours.moniteur.nom}</p>
-                <p>Places maximum: ${cours.nbPersMax}</p>
-                <p>Prix: ${cours.prixCours}€</p>
-            `;
-            
-            if (inscriptionForm) {
-                inscriptionForm.style.display = 'block';
-                inscriptionForm.action = `/inscription_cours/${cours.idCours}`;
-            }
-        } else {
-            content = `
-                <p>Date: ${new Date(reservation.dateCours).toLocaleDateString()}</p>
-                <p>Heure: ${cours.heureCours}</p>
-                <p>Durée: ${cours.dureeCours}h</p>
-                <p>Moniteur: ${cours.moniteur.prenom} ${cours.moniteur.nom}</p>
-                <p>Client: ${reservation.client.prenom} ${reservation.client.nom}</p>
-                <p>Prix: ${cours.prixCours}€</p>
-            `;
-            
-            if (inscriptionForm) {
-                inscriptionForm.style.display = 'none';
-            }
-        }
-        
-        modalContent.innerHTML = content;
-        modal.style.display = 'block';
-    }
-
-    // Gestionnaires d'événements pour le modal
-    document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('courseModal').style.display = 'none';
-    });
-
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('courseModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-
-    // Filtres
-    document.querySelectorAll('.btn-filter').forEach(button => {
-        button.addEventListener('click', function() {
-            document.querySelectorAll('.btn-filter').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            this.classList.add('active');
-
-            const type = this.dataset.type;
-            document.querySelectorAll('.course-regular, .course-particular').forEach(course => {
-                if (type === 'all' || 
-                    (type === 'regular' && course.classList.contains('course-regular')) ||
-                    (type === 'particular' && course.classList.contains('course-particular'))) {
-                    course.style.display = 'block';
-                } else {
-                    course.style.display = 'none';
+                if (column) {
+                    const courseDiv = document.createElement('div');
+                    courseDiv.className = 'course-particular';
+                    courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
+                    courseDiv.style.height = `${cours.dureeCours * 60}px`;
+                    courseDiv.innerHTML = `
+                        ${cours.heureCours} - Cours particulier<br>
+                        Moniteur: ${cours.moniteur.prenom}
+                    `;
+                    
+                    courseDiv.addEventListener('click', () => showCourseDetails(cours, 'particulier'));
+                    column.appendChild(courseDiv);
                 }
-            });
+            }
         });
-    });
+    }
 
     // Initialiser l'affichage
     displayCourses();
