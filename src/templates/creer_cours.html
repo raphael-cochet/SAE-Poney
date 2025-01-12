@@ -1,4 +1,3 @@
-<!-- creer_cours.html -->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -78,77 +77,4 @@ document.getElementById('type_cours').addEventListener('change', function() {
     }
 });
 </script>
-{% endblock %}
-
-<!-- planning.html -->
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="container mt-4">
-    <h2>Planning des cours</h2>
-    
-    <h3 class="mt-4">Cours réguliers</h3>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Jour</th>
-                    <th>Heure</th>
-                    <th>Durée</th>
-                    <th>Prix</th>
-                    <th>Places</th>
-                    <th>Moniteur</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cours in cours_reguliers %}
-                <tr>
-                    <td>{{ cours.jourCours }}</td>
-                    <td>{{ cours.heureCours.strftime('%H:%M') }}</td>
-                    <td>{{ cours.dureeCours }}h</td>
-                    <td>{{ cours.prixCours }}€</td>
-                    <td>{{ cours.nbPersMax }}</td>
-                    <td>{{ cours.moniteur.prenom }} {{ cours.moniteur.nom }}</td>
-                    <td>
-                        {% if current_user.is_authenticated and current_user.type == 'client' %}
-                        <form action="{{ url_for('inscription_cours', cours_id=cours.idCours) }}" method="POST">
-                            <button type="submit" class="btn btn-primary btn-sm">S'inscrire</button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <h3 class="mt-4">Cours particuliers</h3>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Heure</th>
-                    <th>Durée</th>
-                    <th>Prix</th>
-                    <th>Moniteur</th>
-                    <th>Client</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cours, reservation in cours_particuliers %}
-                <tr>
-                    <td>{{ reservation.dateCours.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ cours.heureCours.strftime('%H:%M') }}</td>
-                    <td>{{ cours.dureeCours }}h</td>
-                    <td>{{ cours.prixCours }}€</td>
-                    <td>{{ cours.moniteur.prenom }} {{ cours.moniteur.nom }}</td>
-                    <td>{{ reservation.client.prenom }} {{ reservation.client.nom }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 {% endblock %}

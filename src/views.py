@@ -236,6 +236,7 @@ def inscription_cours(cours_id):
 
 
 @app.route('/planning')
+@login_required
 def planning():
     # Récupérer tous les cours réguliers
     cours_reguliers = CoursRegulier.query\
