@@ -1,258 +1,155 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="container mt-4">
-    <h2>Planning des cours</h2>
-
-    {% if current_user.type == 'moniteur' %}
-    <div class="mb-3">
-        <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">Créer un cours</a>
-    </div>
-    {% endif %}
-
-    <div class="filter-buttons mb-3">
-        <button class="btn btn-outline-primary btn-filter active" data-type="all">Tous</button>
-        <button class="btn btn-outline-primary btn-filter" data-type="regular">Cours réguliers</button>
-        <button class="btn btn-outline-primary btn-filter" data-type="particular">Cours particuliers</button>
-    </div>
-
-    <div class="calendar">
-        <div class="calendar-header">
-            <div class="time-column"></div>
-            <div class="day-header">Lundi</div>
-            <div class="day-header">Mardi</div>
-            <div class="day-header">Mercredi</div>
-            <div class="day-header">Jeudi</div>
-            <div class="day-header">Vendredi</div>
-            <div class="day-header">Samedi</div>
-            <div class="day-header">Dimanche</div>
-        </div>
-        <div class="calendar-body">
-            <div class="times">
-                {% for hour in range(8, 20) %}
-                    <div class="time-slot">{{ hour }}:00</div>
-                {% endfor %}
-            </div>
-            <div class="days">
-                {% for day in range(7) %}
-                    <div class="day-column" data-day="{{ day }}">
-                        {% for hour in range(8, 20) %}
-                            <div class="hour-slot"></div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal -->
-<div id="courseModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3 id="modalTitle"></h3>
-        <div id="modalContent"></div>
-        {% if current_user.is_authenticated and current_user.type == 'client' %}
-        <form id="inscriptionForm" method="POST" style="display: none;">
-            <button type="submit" class="btn btn-primary mt-3">S'inscrire</button>
-        </form>
-        {% endif %}
-    </div>
-</div>
-
-<style>
-    .calendar {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        border: 1px solid #ddd;
-    }
-
-    .time-column {
-        width: 80px;
-        padding-right: 10px;
-        text-align: right;
-    }
-
-    .calendar-header {
-        display: flex;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .day-header {
-        flex: 1;
-        padding: 10px;
-        text-align: center;
-        border-left: 1px solid #ddd;
-        font-weight: bold;
-    }
-
-    .calendar-body {
-        display: flex;
-    }
-
-    .times {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .time-slot {
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        padding-right: 10px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .days {
-        display: flex;
-        flex: 1;
-    }
-
-    .day-column {
-        flex: 1;
-        border-left: 1px solid #ddd;
-        position: relative;
-    }
-
-    .hour-slot {
-        height: 60px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .course-regular {
-        position: absolute;
-        left: 5px;
-        right: 5px;
-        background-color: #007bff;
-        color: white;
-        padding: 5px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .course-particular {
-        position: absolute;
-        left: 5px;
-        right: 5px;
-        background-color: #28a745;
-        color: white;
-        padding: 5px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        z-index: 1000;
-    }
-
-    .modal-content {
-        position: relative;
-        background-color: #fff;
-        margin: 15% auto;
-        padding: 20px;
-        width: 80%;
-        max-width: 500px;
-        border-radius: 5px;
-    }
-
-    .close {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        cursor: pointer;
-    }
-
-    .btn-filter {
-        margin-right: 10px;
-    }
-</style>
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Données des cours depuis le backend
-    const coursReguliers = {{ cours_reguliers|tojson }};
-    const coursParticuliers = {{ cours_particuliers|tojson }};
-
-    // Fonction pour convertir l'heure en position
-    function timeToPosition(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const totalMinutes = hours * 60 + minutes;
-        const startMinutes = 8 * 60;
-        return ((totalMinutes - startMinutes) / 60) * 60;
-    }
-
-    // Afficher les cours
-    function displayCourses() {
-        // Nettoyer les cours existants
-        document.querySelectorAll('.course-regular, .course-particular').forEach(el => el.remove());
-
-        // Afficher les cours réguliers
-        coursReguliers.forEach(cours => {
-            const dayMap = {
-                'Lundi': 0, 'Mardi': 1, 'Mercredi': 2, 'Jeudi': 3,
-                'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
-            };
-            const dayIndex = dayMap[cours.jourCours];
-            const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
-            
-            if (column) {
-                const courseDiv = document.createElement('div');
-                courseDiv.className = 'course-regular';
-                courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
-                courseDiv.style.height = `${cours.dureeCours * 60}px`;
-                courseDiv.innerHTML = `
-                    ${cours.heureCours} - Cours régulier<br>
-                    Moniteur: ${cours.moniteur.prenom}
-                `;
-                courseDiv.dataset.id = cours.idCours;
-                
-                courseDiv.addEventListener('click', () => showCourseDetails(cours, 'regulier'));
-                column.appendChild(courseDiv);
-            }
-        });
-
-        // Afficher les cours particuliers
-        coursParticuliers.forEach(cours => {
-            const date = new Date(cours.dateCours);
-            const dayIndex = date.getDay() - 1;
-            if (dayIndex >= 0) {
-                const column = document.querySelector(`.day-column[data-day="${dayIndex}"]`);
-                
-                if (column) {
-                    const courseDiv = document.createElement('div');
-                    courseDiv.className = 'course-particular';
-                    courseDiv.style.top = `${timeToPosition(cours.heureCours)}px`;
-                    courseDiv.style.height = `${cours.dureeCours * 60}px`;
-                    courseDiv.innerHTML = `
-                        ${cours.heureCours} - Cours particulier<br>
-                        Moniteur: ${cours.moniteur.prenom}
-                    `;
-                    
-                    courseDiv.addEventListener('click', () => showCourseDetails(cours, 'particulier'));
-                    column.appendChild(courseDiv);
-                }
-            }
-        });
-    }
-
-    // Initialiser l'affichage
-    displayCourses();
-});
-</script>
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='calendrier.css') }}">
+<div class="calendar">
+    <div class="calendar-header">
+        <div class="calendar-controls">
+            <button id="prevMonth">&lt;</button>
+            <button id="today">Aujourd'hui</button>
+            <button id="nextMonth">&gt;</button>
+        </div>
+        <h2 id="currentMonth"></h2>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+    </div>
+</div>
+
+<script>
+    class Calendar {
+        constructor() {
+            this.currentDate = new Date();
+            this.days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            this.months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            this.events = [];
+            
+            this.initializeCalendar();
+            this.loadEvents();
+        }
+
+        initializeCalendar() {
+            document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+            document.getElementById('today').addEventListener('click', () => this.goToToday());
+            
+            this.renderCalendar();
+
+            window.addEventListener('resize', () => this.updateCellSizes());
+        }
+
+        updateCellSizes() {
+            const cells = document.querySelectorAll('.calendar-cell');
+            const width = cells[0].offsetWidth;
+            cells.forEach(cell => {
+                cell.style.height = `${width}px`;
+            });
+        }
+
+        async loadEvents() {
+            try {
+                const response = await fetch('/get_reservations');
+                const data = await response.json();
+                this.events = data;
+                this.renderCalendar();
+            } catch (error) {
+                console.error('Erreur lors du chargement des événements:', error);
+            }
+        }
+
+        renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Ajouter les en-têtes des jours
+            this.days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                grid.appendChild(dayHeader);
+            });
+
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startingDay = firstDay.getDay();
+            
+            document.getElementById('currentMonth').textContent = 
+                `${this.months[month]} ${year}`;
+
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startingDay - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                this.createDayCell(day, 'outside-month');
+            }
+
+            const today = new Date();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const isToday = today.getDate() === day && 
+                              today.getMonth() === month && 
+                              today.getFullYear() === year;
+                this.createDayCell(day, isToday ? 'today' : '');
+            }
+
+            const remainingCells = 42 - (startingDay + lastDay.getDate());
+            for (let day = 1; day <= remainingCells; day++) {
+                this.createDayCell(day, 'outside-month');
+            }
+
+            // Mettre à jour les tailles des cellules après le rendu
+            requestAnimationFrame(() => this.updateCellSizes());
+        }
+
+        createDayCell(day, className = '') {
+            const cell = document.createElement('div');
+            cell.className = `calendar-cell ${className}`;
+            
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'calendar-date';
+            dateDiv.textContent = day;
+            cell.appendChild(dateDiv);
+
+            const currentDate = new Date(
+                this.currentDate.getFullYear(),
+                this.currentDate.getMonth(),
+                day
+            );
+
+            const dayEvents = this.events.filter(event => {
+                const eventDate = new Date(event.dateCours);
+                return eventDate.toDateString() === currentDate.toDateString();
+            });
+
+            dayEvents.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `calendar-event event-${event.type === 'régulier' ? 'regular' : 'private'}`;
+                const eventTime = new Date(event.dateCours).toLocaleTimeString([], 
+                    {hour: '2-digit', minute:'2-digit'}
+                );
+                eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
+                cell.appendChild(eventDiv);
+            });
+
+            document.getElementById('calendarGrid').appendChild(cell);
+        }
+
+        changeMonth(delta) {
+            this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+            this.renderCalendar();
+        }
+
+        goToToday() {
+            this.currentDate = new Date();
+            this.renderCalendar();
+        }
+    }
+
+    new Calendar();
+</script>
 {% endblock %}

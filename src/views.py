@@ -234,63 +234,21 @@ def inscription_cours(cours_id):
         
     return redirect(url_for('planning'))
 
-
 @app.route('/planning')
 @login_required
 def planning():
-    # Récupérer tous les cours réguliers
-    cours_reguliers = CoursRegulier.query\
-        .order_by(CoursRegulier.jourCours, CoursRegulier.heureCours)\
-        .all()
-    
-    # Récupérer les cours particuliers pour la semaine à venir
-    today = datetime.today()
-    une_semaine = today + timedelta(days=7)
-    
-    cours_particuliers = CoursParticulier.query\
-        .filter(CoursParticulier.dateCours.between(today, une_semaine))\
-        .order_by(CoursParticulier.dateCours)\
-        .all()
-    
-    # Formatage pour le template
-    cours_reguliers_formated = []
-    for c in cours_reguliers:
-        cours_reguliers_formated.append({
-            'idCours': c.idCours,
-            'jourCours': c.jourCours,
-            'heureCours': c.heureCours.strftime('%H:%M'),
-            'dureeCours': c.dureeCours,
-            'prixCours': c.prixCours,
-            'nbPersMax': c.nbPersMax,
-            'moniteur': {
-                'prenom': c.moniteur.prenom,
-                'nom': c.moniteur.nom
-            }
-        })
-    
-    cours_particuliers_formated = []
-    for c in cours_particuliers:
-        cours_particuliers_formated.append({
-            'idCours': c.idCours,
-            'dateCours': c.dateCours.strftime('%Y-%m-%d'),
-            'heureCours': c.heureCours.strftime('%H:%M'),
-            'dureeCours': c.dureeCours,
-            'prixCours': c.prixCours,
-            'moniteur': {
-                'prenom': c.moniteur.prenom,
-                'nom': c.moniteur.nom
-            },
-            'client': {
-                'prenom': c.client.prenom,
-                'nom': c.client.nom
-            } if c.client else None
-        })
-    
-    return render_template(
-        'planning.html',
-        cours_reguliers=cours_reguliers_formated,
-        cours_particuliers=cours_particuliers_formated
-    )
+    print("Planning route called")
+    return render_template('planning.html')
+
+@app.route('/get_reservations')
+@login_required
+def get_reservations():
+    reservations = Reserver.query.all()
+    return jsonify([{
+        'id': r.id,
+        'dateCours': r.dateCours.isoformat(),
+        'type': 'régulier' if hasattr(r.cours_regulier, 'jourCours') else 'particulier'
+    } for r in reservations])
 
 def calculer_prochaine_date(jour_cours, heure_cours):
     """Calcule la prochaine date pour un cours régulier"""
@@ -306,9 +264,3 @@ def calculer_prochaine_date(jour_cours, heure_cours):
     prochaine_date = today + timedelta(days=jours_a_ajouter)
     return datetime.combine(prochaine_date.date(), heure_cours)
 
-
-
-@app.route('/reservations', methods=['GET'])
-def get_reservations():
-    reservations = Reserver.query.all()
-    return jsonify([r.to_dict() for r in reservations])
