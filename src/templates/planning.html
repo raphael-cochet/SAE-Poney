@@ -7,6 +7,22 @@
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='calendrier.css') }}">
+
+<!-- Le modal -->
+<div id="courseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Détails du cours</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+</div>
+
+
 <div class="calendar">
     <div class="calendar-header">
         <div class="calendar-controls">
@@ -139,23 +155,92 @@
                     {hour: '2-digit', minute:'2-digit'}
                 );
                 eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
+                
+
+                eventDiv.addEventListener('click', () => this.showCourseDetails(event));
+                
                 cell.appendChild(eventDiv);
             });
 
             document.getElementById('calendarGrid').appendChild(cell);
         }
 
-        changeMonth(delta) {
-            this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-            this.renderCalendar();
+        showCourseDetails(event) {
+            const modal = document.getElementById('courseModal');
+            const modalBody = modal.querySelector('.modal-body');
+            const modalFooter = modal.querySelector('.modal-footer');
+            
+            const eventDate = new Date(event.dateCours);
+            const dateStr = eventDate.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = eventDate.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            modalBody.innerHTML = `
+                <p><strong>Date :</strong> ${dateStr}</p>
+                <p><strong>Heure :</strong> ${timeStr}</p>
+                <p><strong>Type :</strong> Cours ${event.type}</p>
+            `;
+
+            modalFooter.innerHTML = '';
+            if (this.isClient()) {
+                const inscriptionBtn = document.createElement('button');
+                inscriptionBtn.className = 'btn-inscription';
+                inscriptionBtn.textContent = "S'inscrire";
+                inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
+                modalFooter.appendChild(inscriptionBtn);
+            }
+
+            modal.style.display = 'block';
         }
 
-        goToToday() {
-            this.currentDate = new Date();
-            this.renderCalendar();
+        isClient() {
+            // TODO Gérer la détéction client ou Moniteur.
+            return true;
+        }
+
+        async inscrireCours(coursId) {
+            try {
+                const response = await fetch(`/inscription_cours/${coursId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Inscription réussie !');
+                    this.loadEvents();
+                    document.getElementById('courseModal').style.display = 'none';
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Erreur lors de l\'inscription');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'inscription');
+            }
         }
     }
 
-    new Calendar();
+    const calendar = new Calendar();
+
+
+    document.querySelector('.modal-close').addEventListener('click', () => {
+        document.getElementById('courseModal').style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('courseModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 </script>
 {% endblock %}
