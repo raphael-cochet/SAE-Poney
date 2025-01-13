@@ -64,6 +64,16 @@
 
             window.addEventListener('resize', () => this.updateCellSizes());
         }
+        
+        changeMonth(n) {
+            this.currentDate.setMonth(this.currentDate.getMonth() + n);
+            this.renderCalendar();
+        }
+
+        goToToday() {
+        this.currentDate = new Date();
+        this.renderCalendar();
+    }
 
         updateCellSizes() {
             const cells = document.querySelectorAll('.calendar-cell');
