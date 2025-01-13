@@ -39,19 +39,59 @@ class Cours(db.Model):
     __tablename__ = 'cours'
     idCours = db.Column(db.Integer, primary_key=True)
     nbPersMax = db.Column(db.Integer, nullable=False)
-    dureeCours = db.Column(db.Integer, nullable=False)  # en heures
-    jourCours = db.Column(db.String(20), nullable=False)
+    dureeCours = db.Column(db.Integer, nullable=False)
     heureCours = db.Column(db.Time, nullable=False)
     prixCours = db.Column(db.Float, nullable=False)
     id_moniteur = db.Column(db.Integer, db.ForeignKey('moniteur.id'))
+    type = db.Column(db.String(50))
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'cours',
+        'polymorphic_on': type
+    }
+
+class CoursRegulier(Cours):
+    __tablename__ = 'cours_regulier'
+    idCours = db.Column(db.Integer, db.ForeignKey('cours.idCours'), primary_key=True)
+    jourCours = db.Column(db.String(20), nullable=False)
+    reservations = db.relationship('Reserver', backref='cours_regulier')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'regulier',
+    }
+
+class CoursParticulier(Cours):
+    __tablename__ = 'cours_particulier'
+    idCours = db.Column(db.Integer, db.ForeignKey('cours.idCours'), primary_key=True)
+    dateCours = db.Column(db.DateTime, nullable=False)
+    id_client = db.Column(db.Integer, db.ForeignKey('client.id'))
+    id_poney = db.Column(db.Integer, db.ForeignKey('poney.idPoney'))
+
+    client = db.relationship('Client', backref='cours_particuliers')
+    poney = db.relationship('Poney', backref='cours_particuliers')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'particulier',
+    }
+
 
 class Reserver(db.Model):
     __tablename__ = 'reserver'
     id = db.Column(db.Integer, primary_key=True)
-    id_cours = db.Column(db.Integer, db.ForeignKey('cours.idCours'))
+    id_cours = db.Column(db.Integer, db.ForeignKey('cours_regulier.idCours'))
     id_client = db.Column(db.Integer, db.ForeignKey('client.id'))
     id_poney = db.Column(db.Integer, db.ForeignKey('poney.idPoney'))
     dateCours = db.Column(db.DateTime, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "id_cours": self.id_cours,
+            "id_client": self.id_client,
+            "id_poney": self.id_poney,
+            "dateCours": self.dateCours.isoformat()
+        }
+
 
 class Poney(db.Model):
     __tablename__ = 'poney'

@@ -1,8 +1,11 @@
 from flask import render_template, session, url_for, request, redirect, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from .models import Client, Moniteur, Poney
+from .models import Client, Moniteur, Poney, Cours, Reserver, CoursRegulier, CoursParticulier, Cotisation
 from .app import app, db
+from sqlalchemy import or_
+from datetime import datetime, timedelta
+from flask import jsonify
 
 @app.route("/")
 def home():
@@ -109,10 +112,6 @@ def logout():
 def les_cours():
     return render_template('page_cours.html')
 
-@app.route('/planning')
-def planning():
-    return render_template('planning.html')
-
 @app.route('/poneys', methods=['GET'])
 def les_poneys():
     poneys = Poney.query.all()
@@ -122,3 +121,146 @@ def les_poneys():
         search_route=url_for('les_poneys'),
         poneys=poneys
     )
+
+# Dans views.py
+from datetime import datetime, timedelta
+from flask_login import current_user, login_required
+
+@app.route('/creer_cours', methods=['GET', 'POST'])
+@login_required
+def creer_cours():
+    if current_user.type != 'moniteur':
+        flash('Accès réservé aux moniteurs', 'danger')
+        return redirect(url_for('home'))
+        
+    if request.method == 'POST':
+        try:
+            duree = int(request.form.get('duree'))
+            nb_max = int(request.form.get('nb_max'))
+            prix = float(request.form.get('prix'))
+            heure = datetime.strptime(request.form.get('heure'), '%H:%M').time()
+            type_cours = request.form.get('type_cours')
+            
+            cours_data = {
+                'dureeCours': duree,
+                'heureCours': heure,
+                'prixCours': prix,
+                'id_moniteur': current_user.id
+            }
+            
+            if type_cours == 'regulier':
+                cours_data['nbPersMax'] = nb_max
+                jour = request.form.get('jour')
+                nouveau_cours = CoursRegulier(
+                    **cours_data,
+                    jourCours=jour
+                )
+                
+            elif type_cours == 'particulier':
+                cours_data['nbPersMax'] = 1
+                date = datetime.strptime(request.form.get('date'), '%Y-%m-%d')
+                date_complete = datetime.combine(date, heure)
+                id_client = int(request.form.get('client'))
+                id_poney = int(request.form.get('poney'))
+                
+                nouveau_cours = CoursParticulier(
+                    **cours_data,
+                    dateCours=date_complete,
+                    id_client=id_client,
+                    id_poney=id_poney
+                )
+            
+            db.session.add(nouveau_cours)
+            db.session.commit()
+            flash('Cours créé avec succès!', 'success')
+            return redirect(url_for('planning'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erreur lors de la création du cours: {str(e)}', 'danger')
+            
+    clients = Client.query.all()
+    poneys = Poney.query.all()
+    return render_template('creer_cours.html', clients=clients, poneys=poneys)
+
+
+@app.route('/inscription_cours/<int:cours_id>', methods=['POST'])
+@login_required
+def inscription_cours(cours_id):
+    if current_user.type != 'client':
+        flash('Accès réservé aux clients', 'danger')
+        return redirect(url_for('planning'))
+        
+    cours = CoursRegulier.query.get_or_404(cours_id)
+    
+    # Vérifier si le cours n'est pas complet pour la prochaine séance
+    today = datetime.today()
+    prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+    
+    nb_inscrits = Reserver.query.filter_by(
+        id_cours=cours_id,
+        dateCours=prochaine_date
+    ).count()
+    
+    if nb_inscrits >= cours.nbPersMax:
+        flash('Ce cours est complet pour la prochaine séance', 'danger')
+        return redirect(url_for('planning'))
+    
+    # Vérifier si le client n'est pas déjà inscrit à ce cours
+    deja_inscrit = Reserver.query.filter_by(
+        id_cours=cours_id,
+        id_client=current_user.id,
+        dateCours=prochaine_date
+    ).first()
+    
+    if deja_inscrit:
+        flash('Vous êtes déjà inscrit à ce cours', 'danger')
+        return redirect(url_for('planning'))
+    
+    # TODO: Ajouter la sélection du poney lors de l'inscription
+    reservation = Reserver(
+        id_cours=cours_id,
+        id_client=current_user.id,
+        dateCours=prochaine_date
+    )
+    
+    try:
+        db.session.add(reservation)
+        db.session.commit()
+        flash('Inscription réussie!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erreur lors de l\'inscription: {str(e)}', 'danger')
+        
+    return redirect(url_for('planning'))
+
+@app.route('/planning')
+@login_required
+def planning():
+    print("Planning route called")
+    return render_template('planning.html')
+
+@app.route('/get_reservations')
+@login_required
+def get_reservations():
+    reservations = Reserver.query.all()
+    return jsonify([{
+        'id': r.id,
+        'dateCours': r.dateCours.isoformat(),
+        'type': 'régulier' if hasattr(r.cours_regulier, 'jourCours') else 'particulier'
+    } for r in reservations])
+
+def calculer_prochaine_date(jour_cours, heure_cours):
+    """Calcule la prochaine date pour un cours régulier"""
+    today = datetime.today()
+    jours = {
+        'Lundi': 0, 'Mardi': 1, 'Mercredi': 2,
+        'Jeudi': 3, 'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
+    }
+    jour_cours_num = jours[jour_cours]
+    jours_a_ajouter = (jour_cours_num - today.weekday() + 7) % 7
+    if jours_a_ajouter == 0 and today.time() > heure_cours:
+        jours_a_ajouter = 7
+    prochaine_date = today + timedelta(days=jours_a_ajouter)
+    return datetime.combine(prochaine_date.date(), heure_cours)
+

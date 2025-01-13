@@ -12,7 +12,7 @@ def loaddb(filename):
     with open(filename, 'r') as f:
         data = yaml.safe_load(f)
 
-    from .models import Personne, Client, Moniteur, Poney, Cours, Reserver, Cotisation
+    from .models import Personne, Client, Moniteur, Poney, CoursRegulier, CoursParticulier, Reserver, Cotisation
 
     # Création des clients
     for cl in data.get("clients", []):
@@ -59,11 +59,10 @@ def loaddb(filename):
     # On fait un premier commit pour avoir les IDs des entités créées
     db.session.commit()
 
-    # Création des cours
-    for co in data.get("cours", []):
-        cours = Cours.query.filter_by(idCours=co["idCours"]).first()
+    # Création des cours réguliers
+    for co in data.get("cours_reguliers", []):
+        cours = CoursRegulier.query.filter_by(idCours=co["idCours"]).first()
         if cours is None:
-            # Conversion de la chaîne d'heure en objet time
             heure = datetime.strptime(co['heureCours'], '%H:%M').time()
             cours_data = {
                 'idCours': co['idCours'],
@@ -74,16 +73,36 @@ def loaddb(filename):
                 'prixCours': co['prixCours'],
                 'id_moniteur': co['id_moniteur']
             }
-            cours = Cours(**cours_data)
+            cours = CoursRegulier(**cours_data)
             db.session.add(cours)
         else:
-            print(f"Cours {co['idCours']} déjà existant.")
+            print(f"Cours régulier {co['idCours']} déjà existant.")
+
+    # Création des cours particuliers
+    for cp in data.get("cours_particuliers", []):
+        cours = CoursParticulier.query.filter_by(idCours=cp["idCours"]).first()
+        if cours is None:
+            date_cours = datetime.strptime(cp['dateCours'], '%Y-%m-%d %H:%M:%S')
+            cours_data = {
+                'idCours': cp['idCours'],
+                'nbPersMax': 1,
+                'dureeCours': cp['dureeCours'],
+                'heureCours': date_cours.time(),
+                'prixCours': cp['prixCours'],
+                'id_moniteur': cp['id_moniteur'],
+                'dateCours': date_cours,
+                'id_client': cp['id_client'],
+                'id_poney': cp['id_poney']
+            }
+            cours = CoursParticulier(**cours_data)
+            db.session.add(cours)
+        else:
+            print(f"Cours particulier {cp['idCours']} déjà existant.")
 
     # Création des réservations
     for re in data.get("reservations", []):
         reservation = Reserver.query.filter_by(id=re["id"]).first()
         if reservation is None:
-            # Conversion de la chaîne de date en objet datetime
             date_cours = datetime.strptime(re['dateCours'], '%Y-%m-%d %H:%M:%S')
             reservation_data = {
                 'id': re['id'],
@@ -101,7 +120,6 @@ def loaddb(filename):
     for co in data.get("cotisations", []):
         cotisation = Cotisation.query.filter_by(idCotisation=co["idCotisation"]).first()
         if cotisation is None:
-            # Conversion de la chaîne de date en objet date
             date_cotisation = datetime.strptime(co['dateRecCoti'], '%Y-%m-%d').date()
             cotisation_data = {
                 'idCotisation': co['idCotisation'],
@@ -130,7 +148,6 @@ def newuser(username, password):
     from hashlib import sha256
     m = sha256()
     m.update(password.encode())
-    # Créer un nouveau client avec un mot de passe hashé
     from .models import Client
     client = Client(
         nom=username,
