@@ -353,3 +353,36 @@ def supprimer_cours(cours_id):
 @login_required
 def check_moniteur():
    return jsonify({'is_moniteur': current_user.type == 'moniteur'})
+
+@app.route('/cours_details/<int:cours_id>')
+@login_required
+def cours_details(cours_id):
+    cours = Cours.query.get_or_404(cours_id)
+    
+    details = {
+        'dureeCours': cours.dureeCours,
+        'prixCours': cours.prixCours,
+        'moniteur': f"{cours.moniteur.prenom} {cours.moniteur.nom}",
+        'nbPersMax': cours.nbPersMax
+    }
+    
+    if cours.type == 'particulier':
+        cours_particulier = CoursParticulier.query.get(cours_id)
+        details.update({
+            'client': f"{cours_particulier.client.prenom} {cours_particulier.client.nom}",
+            'poney': cours_particulier.poney.nomPoney if cours_particulier.poney else "Pas de poney assigné"
+        })
+    else:
+        cours_regulier = CoursRegulier.query.get(cours_id)
+        participants = []
+        reservations = Reserver.query.filter_by(id_cours=cours_id).all()
+        for reservation in reservations:
+            participant = {
+                'nom': reservation.client.nom,
+                'prenom': reservation.client.prenom,
+                'poney': reservation.poney.nomPoney if reservation.poney else None
+            }
+            participants.append(participant)
+        details['participants'] = participants
+    
+    return jsonify(details)
