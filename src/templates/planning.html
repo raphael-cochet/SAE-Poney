@@ -1,343 +1,340 @@
-
-
 {% extends 'base.html' %}
 
-
 {% block styles %}
-   {{ super() }}
-   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% endblock %}
-
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='calendrier.css') }}">
 
-
 <!-- Le modal -->
 <div id="courseModal" class="modal">
-   <div class="modal-content">
-       <div class="modal-header">
-           <h3>Détails du cours</h3>
-           <span class="modal-close">&times;</span>
-       </div>
-       <div class="modal-body">
-       </div>
-       <div class="modal-footer">
-       </div>
-   </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Détails du cours</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
 </div>
-
-
-
 
 <div class="calendar">
-   <div class="calendar-header">
-       <div class="calendar-controls">
-           <button id="prevMonth">&lt;</button>
-           <button id="today">Aujourd'hui</button>
-           <button id="nextMonth">&gt;</button>
-       </div>
-       <h2 id="currentMonth"></h2>
-      
-       <div class="add-course-button">
-           <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">
-               Ajouter un cours
-           </a>
-       </div>
-   </div>
-   <div class="calendar-grid" id="calendarGrid">
-   </div>
+    <div class="calendar-header">
+        <div class="calendar-controls">
+            <button id="prevMonth">&lt;</button>
+            <button id="today">Aujourd'hui</button>
+            <button id="nextMonth">&gt;</button>
+        </div>
+        <h2 id="currentMonth"></h2>
+            <div class="add-course-button">
+                <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">
+                    Ajouter un cours
+                </a>
+            </div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+    </div>
 </div>
-
 
 <script>
     const userType = "{{ current_user.type }}";
-    console.log("Type d'utilisateur:", userType); // Pour déboguer
 </script>
 
-
 <script>
-   class Calendar {
+    class Calendar {
         constructor() {
             this.currentDate = new Date();
             this.days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
             this.months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
-                        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
             this.events = [];
-            this.userType = userType; // Stockons le type d'utilisateur dans la classe
             
             this.initializeCalendar();
             this.loadEvents();
         }
 
-
-       initializeCalendar() {
-           document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
-           document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
-           document.getElementById('today').addEventListener('click', () => this.goToToday());
-          
-           this.renderCalendar();
-
-
-           window.addEventListener('resize', () => this.updateCellSizes());
-       }
-      
-       changeMonth(n) {
-           this.currentDate.setMonth(this.currentDate.getMonth() + n);
-           this.renderCalendar();
-       }
-
-
-       goToToday() {
-       this.currentDate = new Date();
-       this.renderCalendar();
-   }
-
-
-       updateCellSizes() {
-           const cells = document.querySelectorAll('.calendar-cell');
-           const width = cells[0].offsetWidth;
-           cells.forEach(cell => {
-               cell.style.height = `${width}px`;
-           });
-       }
-
-
-       async loadEvents() {
-           try {
-               const response = await fetch('/get_reservations');
-               const data = await response.json();
-               this.events = data;
-               this.renderCalendar();
-           } catch (error) {
-               console.error('Erreur lors du chargement des événements:', error);
-           }
-       }
-
-
-       renderCalendar() {
-           const grid = document.getElementById('calendarGrid');
-           grid.innerHTML = '';
-          
-           // Ajouter les en-têtes des jours
-           this.days.forEach(day => {
-               const dayHeader = document.createElement('div');
-               dayHeader.className = 'calendar-day-header';
-               dayHeader.textContent = day;
-               grid.appendChild(dayHeader);
-           });
-
-
-           const year = this.currentDate.getFullYear();
-           const month = this.currentDate.getMonth();
-           const firstDay = new Date(year, month, 1);
-           const lastDay = new Date(year, month + 1, 0);
-           const startingDay = firstDay.getDay();
-          
-           document.getElementById('currentMonth').textContent =
-               `${this.months[month]} ${year}`;
-
-
-           const prevMonthLastDay = new Date(year, month, 0).getDate();
-           for (let i = startingDay - 1; i >= 0; i--) {
-               const day = prevMonthLastDay - i;
-               this.createDayCell(day, 'outside-month');
-           }
-
-
-           const today = new Date();
-           for (let day = 1; day <= lastDay.getDate(); day++) {
-               const isToday = today.getDate() === day &&
-                             today.getMonth() === month &&
-                             today.getFullYear() === year;
-               this.createDayCell(day, isToday ? 'today' : '');
-           }
-
-
-           const remainingCells = 42 - (startingDay + lastDay.getDate());
-           for (let day = 1; day <= remainingCells; day++) {
-               this.createDayCell(day, 'outside-month');
-           }
-
-
-           // Mettre à jour les tailles des cellules après le rendu
-           requestAnimationFrame(() => this.updateCellSizes());
-       }
-
-
-       createDayCell(day, className = '') {
-           const cell = document.createElement('div');
-           cell.className = `calendar-cell ${className}`;
-          
-           const dateDiv = document.createElement('div');
-           dateDiv.className = 'calendar-date';
-           dateDiv.textContent = day;
-           cell.appendChild(dateDiv);
-
-
-           const currentDate = new Date(
-               this.currentDate.getFullYear(),
-               this.currentDate.getMonth(),
-               day
-           );
-
-
-           const dayEvents = this.events.filter(event => {
-               const eventDate = new Date(event.dateCours);
-               return eventDate.toDateString() === currentDate.toDateString();
-           });
-
-
-           dayEvents.forEach(event => {
-               const eventDiv = document.createElement('div');
-               eventDiv.className = `calendar-event event-${event.type === 'régulier' ? 'regular' : 'private'}`;
-               const eventDate = new Date(event.dateCours);
-               const eventTime = eventDate.toLocaleTimeString([],
-                   {hour: '2-digit', minute:'2-digit'}
-               );
-               eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
-               eventDiv.addEventListener('click', () => this.showCourseDetails(event));
-               cell.appendChild(eventDiv);
-           });
-
-
-           document.getElementById('calendarGrid').appendChild(cell);
-       }
-
-
-       showCourseDetails(event) {
-        const modal = document.getElementById('courseModal');
-        const modalBody = modal.querySelector('.modal-body');
-        const modalFooter = modal.querySelector('.modal-footer');
-        
-        const eventDate = new Date(event.dateCours);
-        const dateStr = eventDate.toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        const timeStr = eventDate.toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    
-        modalBody.innerHTML = `
-            <p><strong>Date :</strong> ${dateStr}</p>
-            <p><strong>Heure :</strong> ${timeStr}</p>
-            <p><strong>Type :</strong> Cours ${event.type}</p>
-        `;
-    
-        modalFooter.innerHTML = '';
-        
-        // Boutons selon le rôle
-        if (!this.isClient()) {  // Si c'est un moniteur
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn btn-danger';
-            deleteBtn.textContent = 'Supprimer le cours';
-            deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
-            modalFooter.appendChild(deleteBtn);
-        } else {  // Si c'est un client
-            const inscriptionBtn = document.createElement('button');
-            inscriptionBtn.className = 'btn-inscription';
-            inscriptionBtn.textContent = "S'inscrire";
-            inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
-            modalFooter.appendChild(inscriptionBtn);
+        initializeCalendar() {
+            document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+            document.getElementById('today').addEventListener('click', () => this.goToToday());
+            
+            this.renderCalendar();
+            window.addEventListener('resize', () => this.updateCellSizes());
         }
-    
-        modal.style.display = 'block';
+        
+        changeMonth(n) {
+            this.currentDate.setMonth(this.currentDate.getMonth() + n);
+            this.renderCalendar();
+            this.loadEvents();
+        }
+
+        goToToday() {
+            this.currentDate = new Date();
+            this.renderCalendar();
+            this.loadEvents();
+        }
+
+        updateCellSizes() {
+            const cells = document.querySelectorAll('.calendar-cell');
+            const width = cells[0].offsetWidth;
+            cells.forEach(cell => {
+                cell.style.height = `${width}px`;
+            });
+        }
+
+        async loadEvents() {
+            try {
+                const response = await fetch('/get_reservations');
+                const data = await response.json();
+                this.events = data;
+                this.renderCalendar();
+            } catch (error) {
+                console.error('Erreur lors du chargement des événements:', error);
+            }
+        }
+
+        renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            this.days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                grid.appendChild(dayHeader);
+            });
+
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startingDay = firstDay.getDay();
+            
+            document.getElementById('currentMonth').textContent =
+                `${this.months[month]} ${year}`;
+
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startingDay - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                this.createDayCell(day, 'outside-month');
+            }
+
+            const today = new Date();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const isToday = today.getDate() === day &&
+                              today.getMonth() === month &&
+                              today.getFullYear() === year;
+                this.createDayCell(day, isToday ? 'today' : '');
+            }
+
+            const remainingCells = 42 - (startingDay + lastDay.getDate());
+            for (let day = 1; day <= remainingCells; day++) {
+                this.createDayCell(day, 'outside-month');
+            }
+
+            requestAnimationFrame(() => this.updateCellSizes());
+        }
+
+        createDayCell(day, className = '') {
+            const cell = document.createElement('div');
+            cell.className = `calendar-cell ${className}`;
+            
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'calendar-date';
+            dateDiv.textContent = day;
+            cell.appendChild(dateDiv);
+
+            const currentDate = new Date(
+                this.currentDate.getFullYear(),
+                this.currentDate.getMonth(),
+                day
+            );
+
+            const dayEvents = this.events.filter(event => {
+                const eventDate = new Date(event.dateCours);
+                return eventDate.toDateString() === currentDate.toDateString();
+            });
+
+            dayEvents.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `calendar-event event-${event.type === 'régulier' ? 'regular' : 'private'}`;
+                const eventDate = new Date(event.dateCours);
+                const eventTime = eventDate.toLocaleTimeString([], 
+                    {hour: '2-digit', minute:'2-digit'}
+                );
+                eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
+                eventDiv.addEventListener('click', () => this.showCourseDetails(event));
+                cell.appendChild(eventDiv);
+            });
+
+            document.getElementById('calendarGrid').appendChild(cell);
+        }
+
+        async showCourseDetails(event) {
+            const modal = document.getElementById('courseModal');
+            const modalBody = modal.querySelector('.modal-body');
+            const modalFooter = modal.querySelector('.modal-footer');
+            
+            try {
+                const response = await fetch(`/cours_details/${event.id}`);
+                const courseDetails = await response.json();
+                
+                const eventDate = new Date(event.dateCours);
+                const dateStr = eventDate.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const timeStr = eventDate.toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let detailsHTML = `
+                    <div class="course-details">
+                        <p><strong>Date :</strong> ${dateStr}</p>
+                        <p><strong>Heure :</strong> ${timeStr}</p>
+                        <p><strong>Type :</strong> Cours ${event.type}</p>
+                        <p><strong>Durée :</strong> ${courseDetails.dureeCours} minutes</p>
+                        <p><strong>Prix :</strong> ${courseDetails.prixCours}€</p>
+                        <p><strong>Moniteur :</strong> ${courseDetails.moniteur}</p>
+                    `;
+
+                if (event.type === 'particulier') {
+                    detailsHTML += `
+                        <p><strong>Client :</strong> ${courseDetails.client}</p>
+                        <p><strong>Poney assigné :</strong> ${courseDetails.poney}</p>
+                    `;
+                } else {
+                    detailsHTML += `
+                        <div class="participants-list">
+                            <h4>Participants (${courseDetails.participants.length}/${courseDetails.nbPersMax})</h4>
+                            <ul>
+                    `;
+                    
+                    if (courseDetails.participants.length > 0) {
+                        courseDetails.participants.forEach(participant => {
+                            detailsHTML += `
+                                <li>
+                                    ${participant.nom} ${participant.prenom}
+                                    ${participant.poney ? ` - Poney: ${participant.poney}` : ' - Pas de poney assigné'}
+                                </li>
+                            `;
+                        });
+                    } else {
+                        detailsHTML += `<li>Aucun participant inscrit</li>`;
+                    }
+                    
+                    detailsHTML += `
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                detailsHTML += '</div>';
+                modalBody.innerHTML = detailsHTML;
+
+                modalFooter.innerHTML = '';
+                
+                if (!this.isClient()) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-danger';
+                    deleteBtn.textContent = 'Supprimer le cours';
+                    deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
+                    modalFooter.appendChild(deleteBtn);
+                } else if (event.type === 'régulier') {
+                    const inscriptionBtn = document.createElement('button');
+                    inscriptionBtn.className = 'btn-inscription';
+                    inscriptionBtn.textContent = "S'inscrire";
+                    inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
+                    modalFooter.appendChild(inscriptionBtn);
+                }
+
+                modal.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des détails:', error);
+                modalBody.innerHTML = '<p>Erreur lors du chargement des détails du cours</p>';
+            }
+        }
+
+        isClient() {
+            return userType === 'client';
+        }
+
+        async inscrireCours(coursId) {
+            try {
+                const response = await fetch(`/inscription_cours/${coursId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Inscription réussie !');
+                    this.loadEvents();
+                    document.getElementById('courseModal').style.display = 'none';
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Erreur lors de l\'inscription');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'inscription');
+            }
+        }
+
+        async deleteCours(coursId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+                try {
+                    const response = await fetch(`/supprimer_cours/${coursId}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (response.ok) {
+                        alert('Cours supprimé avec succès');
+                        document.getElementById('courseModal').style.display = 'none';
+                        this.loadEvents();
+                    } else {
+                        const error = await response.json();
+                        alert(error.message || 'Erreur lors de la suppression');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la suppression du cours');
+                }
+            }
+        }
+
+        async isMoniteur() {
+            try {
+                const response = await fetch('/check_moniteur');
+                const data = await response.json();
+                return data.is_moniteur;
+            } catch (error) {
+                console.error('Erreur lors de la vérification du rôle:', error);
+                return false;
+            }
+        }
     }
 
-        
+    const calendar = new Calendar();
 
-    
-        isClient() {
+    document.querySelector('.modal-close').addEventListener('click', () => {
+        document.getElementById('courseModal').style.display = 'none';
+    });
 
-            return this.userType === 'client';
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('courseModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
         }
-    
-
-
-
-
-
-       async inscrireCours(coursId) {
-           try {
-               const response = await fetch(`/inscription_cours/${coursId}`, {
-                   method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json'
-                   }
-               });
-
-
-               if (response.ok) {
-                   alert('Inscription réussie !');
-                   this.loadEvents();
-                   document.getElementById('courseModal').style.display = 'none';
-               } else {
-                   const error = await response.json();
-                   alert(error.message || 'Erreur lors de l\'inscription');
-               }
-           } catch (error) {
-               console.error('Erreur:', error);
-               alert('Erreur lors de l\'inscription');
-           }
-       }
-
-
-       async deleteCours(coursId) {
-           if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
-               try {
-                   const response = await fetch(`/supprimer_cours/${coursId}`, {
-                       method: 'DELETE',
-                   });
-
-
-                   if (response.ok) {
-                       alert('Cours supprimé avec succès');
-                       document.getElementById('courseModal').style.display = 'none';
-                       this.loadEvents();  // Recharger le calendrier
-                   } else {
-                       const error = await response.json();
-                       alert(error.message || 'Erreur lors de la suppression');
-                   }
-               } catch (error) {
-                   console.error('Erreur:', error);
-                   alert('Erreur lors de la suppression du cours');
-               }
-           }
-       }
-
-
-       async isMoniteur() {
-           try {
-               const response = await fetch('/check_moniteur');
-               const data = await response.json();
-               return data.is_moniteur;
-           } catch (error) {
-               console.error('Erreur lors de la vérification du rôle:', error);
-               return false;
-           }
-       }
-   }
-
-
-   const calendar = new Calendar();
-
-
-
-
-   document.querySelector('.modal-close').addEventListener('click', () => {
-       document.getElementById('courseModal').style.display = 'none';
-   });
-
-
-   window.addEventListener('click', (event) => {
-       const modal = document.getElementById('courseModal');
-       if (event.target === modal) {
-           modal.style.display = 'none';
-       }
-   });
+    });
 </script>
 {% endblock %}
