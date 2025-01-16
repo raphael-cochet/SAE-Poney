@@ -31,11 +31,13 @@
          </div>
          <h2 id="currentMonth"></h2>
         
-         <div class="add-course-button">
-              <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">
-                    Ajouter un cours
-              </a>
-         </div>
+         {% if current_user.type != 'client' %}
+               <div class="add-course-button">
+                    <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">
+                              Ajouter un cours
+                    </a>
+               </div>
+          {% endif %}
     </div>
     <div class="calendar-grid" id="calendarGrid">
     </div>

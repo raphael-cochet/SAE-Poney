@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
+
     <h2>Créer un cours</h2>
     <form method="POST">
         <div class="form-group">
@@ -73,23 +74,24 @@
     </form>
 </div>
 
+
 <script>
 document.getElementById('type_cours').addEventListener('change', function() {
-    const regulierFields = document.getElementById('regulier-fields');
-    const particulierFields = document.getElementById('particulier-fields');
-    const nbMaxField = document.getElementById('nb-max-field');
-    
-    if (this.value === 'particulier') {
-        regulierFields.style.display = 'none';
-        particulierFields.style.display = 'block';
-        nbMaxField.style.display = 'none';
-        nbMaxField.querySelector('input').value = '1';
-    } else {
-        regulierFields.style.display = 'block';
-        particulierFields.style.display = 'none';
-        nbMaxField.style.display = 'block';
-        nbMaxField.querySelector('input').value = '';
-    }
+   const regulierFields = document.getElementById('regulier-fields');
+   const particulierFields = document.getElementById('particulier-fields');
+   const nbMaxField = document.getElementById('nb-max-field');
+  
+   if (this.value === 'particulier') {
+       regulierFields.style.display = 'none';
+       particulierFields.style.display = 'block';
+       nbMaxField.style.display = 'none';
+       nbMaxField.querySelector('input').value = '1';
+   } else {
+       regulierFields.style.display = 'block';
+       particulierFields.style.display = 'none';
+       nbMaxField.style.display = 'block';
+       nbMaxField.querySelector('input').value = '';
+   }
 });
 </script>
 {% endblock %}
