@@ -91,16 +91,27 @@
           }
 
           async loadEvents() {
-                try {
-                     const response = await fetch('/get_reservations');
-                     const data = await response.json();
-                     
-                     // Traiter les événements
-                     this.events = this.processEvents(data);
-                     this.renderCalendar();
-                } catch (error) {
-                     console.error('Erreur lors du chargement des événements:', error);
-                }
+               try {
+                    const response = await fetch('/get_reservations');
+                    const data = await response.json();
+                    
+                    const enrichedEvents = await Promise.all(data.map(async event => {
+                         if (event.type === 'régulier') {
+                              const detailsResponse = await fetch(`/cours_details/${event.id}`);
+                              const details = await detailsResponse.json();
+                              return {
+                              ...event,
+                              est_inscrit: details.est_inscrit
+                              };
+                         }
+                         return event;
+                    }));
+                    
+                    this.events = this.processEvents(enrichedEvents);
+                    this.renderCalendar();
+               } catch (error) {
+                    console.error('Erreur lors du chargement des événements:', error);
+               }
           }
 
           processEvents(events) {
@@ -204,43 +215,58 @@
           }
 
           createDayCell(day, className = '') {
-                const cell = document.createElement('div');
-                cell.className = `calendar-cell ${className}`;
-                
-                const dateDiv = document.createElement('div');
-                dateDiv.className = 'calendar-date';
-                dateDiv.textContent = day;
-                cell.appendChild(dateDiv);
+               const cell = document.createElement('div');
+               cell.className = `calendar-cell ${className}`;
+               
+               const dateDiv = document.createElement('div');
+               dateDiv.className = 'calendar-date';
+               dateDiv.textContent = day;
+               cell.appendChild(dateDiv);
 
-                // Créer une date pour ce jour
-                const cellDate = new Date(
-                     this.currentDate.getFullYear(),
-                     this.currentDate.getMonth(),
-                     day
-                );
+               // Créer une date pour ce jour
+               const cellDate = new Date(
+                    this.currentDate.getFullYear(),
+                    this.currentDate.getMonth(),
+                    day
+               );
 
-                // Filtrer les événements pour ce jour
-                const dayEvents = this.events.filter(event => {
-                     const eventDate = new Date(event.dateCours);
-                     return eventDate.getDate() === cellDate.getDate() &&
+               // Filtrer les événements pour ce jour
+               const dayEvents = this.events.filter(event => {
+                    const eventDate = new Date(event.dateCours);
+                    return eventDate.getDate() === cellDate.getDate() &&
                               eventDate.getMonth() === cellDate.getMonth() &&
                               eventDate.getFullYear() === cellDate.getFullYear();
-                });
+               });
 
-                // Ajouter les événements à la cellule
-                dayEvents.forEach(event => {
-                     const eventDiv = document.createElement('div');
-                     eventDiv.className = `calendar-event event-${event.type === 'régulier' ? 'regular' : 'private'}`;
-                     const eventDate = new Date(event.dateCours);
-                     const eventTime = eventDate.toLocaleTimeString([], 
-                          {hour: '2-digit', minute:'2-digit'}
-                     );
-                     eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
-                     eventDiv.addEventListener('click', () => this.showCourseDetails(event));
-                     cell.appendChild(eventDiv);
-                });
+               // Ajouter les événements à la cellule
+               dayEvents.forEach(event => {
+                    const eventDiv = document.createElement('div');
+                    
+                    // Déterminer la classe CSS en fonction du type de cours et de l'inscription
+                    let eventClass = 'calendar-event';
+                    if (userType === 'client') {
+                         if (event.type === 'particulier' || event.est_inscrit) {
+                              eventClass += ' event-inscrit';  // Vert pour les cours où l'utilisateur est inscrit
+                         } else {
+                              eventClass += ' event-non-inscrit';  // Gris pour les cours où l'utilisateur n'est pas inscrit
+                         }
+                    } else {
+                         // Pour les moniteurs, garder l'affichage original
+                         eventClass += event.type === 'régulier' ? ' event-regular' : ' event-private';
+                    }
+                    
+                    eventDiv.className = eventClass;
+                    
+                    const eventDate = new Date(event.dateCours);
+                    const eventTime = eventDate.toLocaleTimeString([], 
+                         {hour: '2-digit', minute:'2-digit'}
+                    );
+                    eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
+                    eventDiv.addEventListener('click', () => this.showCourseDetails(event));
+                    cell.appendChild(eventDiv);
+               });
 
-                document.getElementById('calendarGrid').appendChild(cell);
+               document.getElementById('calendarGrid').appendChild(cell);
           }
 
           async showCourseDetails(event) {
