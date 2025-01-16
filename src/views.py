@@ -306,36 +306,34 @@ def planning():
    print("Planning route called")
    return render_template('planning.html')
 
-
 @app.route('/get_reservations')
 @login_required
 def get_reservations():
-   events = []
-  
-   # Récupérer les cours particuliers
-   cours_particuliers = CoursParticulier.query.all()
-   for cours in cours_particuliers:
-       events.append({
-           'id': cours.idCours,
-           'dateCours': cours.dateCours.isoformat(),
-           'type': 'particulier'
-       })
-  
-   # Récupérer les cours réguliers
-   cours_reguliers = CoursRegulier.query.all()
-   today = datetime.today()
-   for cours in cours_reguliers:
-       # Calculer la prochaine date pour ce cours régulier
-       prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
-      
-       # Ajouter l'événement
-       events.append({
-           'id': cours.idCours,
-           'dateCours': prochaine_date.isoformat(),
-           'type': 'régulier'
-       })
-  
-   return jsonify(events)
+    events = []
+    
+    if current_user.type == 'client':
+        cours_particuliers = CoursParticulier.query.filter_by(id_client=current_user.id).all()
+    else:
+        cours_particuliers = CoursParticulier.query.all()
+    
+    for cours in cours_particuliers:
+        events.append({
+            'id': cours.idCours,
+            'dateCours': cours.dateCours.isoformat(),
+            'type': 'particulier'
+        })
+    
+    cours_reguliers = CoursRegulier.query.all()
+    for cours in cours_reguliers:
+        prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+        
+        events.append({
+            'id': cours.idCours,
+            'dateCours': prochaine_date.isoformat(),
+            'type': 'régulier'
+        })
+    
+    return jsonify(events)
 
 
 def calculer_prochaine_date(jour_cours, heure_cours):
