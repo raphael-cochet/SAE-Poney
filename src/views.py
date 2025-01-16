@@ -221,52 +221,49 @@ def creer_cours():
 @app.route('/inscription_cours/<int:cours_id>', methods=['POST'])
 @login_required
 def inscription_cours(cours_id):
-   if current_user.type != 'client':
-       flash('Accès réservé aux clients', 'danger')
-       return redirect(url_for('planning'))
-      
-   cours = CoursRegulier.query.get_or_404(cours_id)
-  
-   # Vérifier si le cours n'est pas complet pour la prochaine séance
-   today = datetime.today()
-   prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
-  
-   nb_inscrits = Reserver.query.filter_by(
-       id_cours=cours_id,
-       dateCours=prochaine_date
-   ).count()
-  
-   if nb_inscrits >= cours.nbPersMax:
-       flash('Ce cours est complet pour la prochaine séance', 'danger')
-       return redirect(url_for('planning'))
-  
-   # Vérifier si le client n'est pas déjà inscrit à ce cours
-   deja_inscrit = Reserver.query.filter_by(
-       id_cours=cours_id,
-       id_client=current_user.id,
-       dateCours=prochaine_date
-   ).first()
-  
-   if deja_inscrit:
-       flash('Vous êtes déjà inscrit à ce cours', 'danger')
-       return redirect(url_for('planning'))
-  
-   # TODO: Ajouter la sélection du poney lors de l'inscription
-   reservation = Reserver(
-       id_cours=cours_id,
-       id_client=current_user.id,
-       dateCours=prochaine_date
-   )
-  
-   try:
-       db.session.add(reservation)
-       db.session.commit()
-       flash('Inscription réussie!', 'success')
-   except Exception as e:
-       db.session.rollback()
-       flash(f'Erreur lors de l\'inscription: {str(e)}', 'danger')
-      
-   return redirect(url_for('planning'))
+    if current_user.type != 'client':
+        return jsonify({'message': 'Accès réservé aux clients'}), 403
+        
+    # Vérifier si c'est un cours régulier
+    cours = CoursRegulier.query.get_or_404(cours_id)
+    if not cours:
+        return jsonify({'message': 'Cours non trouvé ou type de cours incorrect'}), 404
+    
+    # Vérifier si le cours n'est pas complet
+    today = datetime.today()
+    prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+    
+    nb_inscrits = Reserver.query.filter_by(
+        id_cours=cours_id,
+        dateCours=prochaine_date
+    ).count()
+    
+    if nb_inscrits >= cours.nbPersMax:
+        return jsonify({'message': 'Ce cours est complet'}), 400
+    
+    # Vérifier si le client n'est pas déjà inscrit
+    deja_inscrit = Reserver.query.filter_by(
+        id_cours=cours_id,
+        id_client=current_user.id,
+        dateCours=prochaine_date
+    ).first()
+    
+    if deja_inscrit:
+        return jsonify({'message': 'Vous êtes déjà inscrit à ce cours'}), 400
+    
+    try:
+        # Créer la réservation
+        reservation = Reserver(
+            id_cours=cours_id,
+            id_client=current_user.id,
+            dateCours=prochaine_date
+        )
+        db.session.add(reservation)
+        db.session.commit()
+        return jsonify({'message': 'Inscription réussie'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Erreur lors de l\'inscription: {str(e)}'}), 500
 
 
 @app.route('/planning')
@@ -279,33 +276,34 @@ def planning():
 @app.route('/get_reservations')
 @login_required
 def get_reservations():
-   events = []
-  
-   # Récupérer les cours particuliers
-   cours_particuliers = CoursParticulier.query.all()
-   for cours in cours_particuliers:
-       events.append({
-           'id': cours.idCours,
-           'dateCours': cours.dateCours.isoformat(),
-           'type': 'particulier'
-       })
-  
-   # Récupérer les cours réguliers
-   cours_reguliers = CoursRegulier.query.all()
-   today = datetime.today()
-   for cours in cours_reguliers:
-       # Calculer la prochaine date pour ce cours régulier
-       prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
-      
-       # Ajouter l'événement
-       events.append({
-           'id': cours.idCours,
-           'dateCours': prochaine_date.isoformat(),
-           'type': 'régulier'
-       })
-  
-   return jsonify(events)
-
+    events = []
+    
+    # Cours particuliers
+    cours_particuliers = CoursParticulier.query.all()
+    for cours in cours_particuliers:
+        # N'afficher que si l'utilisateur est moniteur ou si c'est le client du cours
+        if current_user.type == 'moniteur' or cours.id_client == current_user.id:
+            events.append({
+                'id': cours.idCours,
+                'dateCours': cours.dateCours.isoformat(),
+                'type': 'particulier',
+                'id_client': cours.id_client,
+                'moniteur_id': cours.id_moniteur
+            })
+    
+    # Cours réguliers
+    cours_reguliers = CoursRegulier.query.all()
+    for cours in cours_reguliers:
+        prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+        events.append({
+            'id': cours.idCours,
+            'dateCours': prochaine_date.isoformat(),
+            'type': 'régulier',
+            'nb_max': cours.nbPersMax,
+            'moniteur_id': cours.id_moniteur
+        })
+    
+    return jsonify(events)
 
 def calculer_prochaine_date(jour_cours, heure_cours):
    """Calcule la prochaine date pour un cours régulier"""
