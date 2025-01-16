@@ -51,23 +51,24 @@
 
 
 <script>
-   // Passer le type d'utilisateur au JavaScript
-   const userType = "{{ current_user.type }}";
+    const userType = "{{ current_user.type }}";
+    console.log("Type d'utilisateur:", userType); // Pour déboguer
 </script>
 
 
 <script>
    class Calendar {
-       constructor() {
-           this.currentDate = new Date();
-           this.days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-           this.months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        constructor() {
+            this.currentDate = new Date();
+            this.days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            this.months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
                         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-           this.events = [];
-          
-           this.initializeCalendar();
-           this.loadEvents();
-       }
+            this.events = [];
+            this.userType = userType; // Stockons le type d'utilisateur dans la classe
+            
+            this.initializeCalendar();
+            this.loadEvents();
+        }
 
 
        initializeCalendar() {
@@ -205,57 +206,56 @@
 
 
        showCourseDetails(event) {
-           const modal = document.getElementById('courseModal');
-           const modalBody = modal.querySelector('.modal-body');
-           const modalFooter = modal.querySelector('.modal-footer');
-          
-           const eventDate = new Date(event.dateCours);
-           const dateStr = eventDate.toLocaleDateString('fr-FR', {
-               weekday: 'long',
-               year: 'numeric',
-               month: 'long',
-               day: 'numeric'
-           });
-           const timeStr = eventDate.toLocaleTimeString('fr-FR', {
-               hour: '2-digit',
-               minute: '2-digit'
-           });
+        const modal = document.getElementById('courseModal');
+        const modalBody = modal.querySelector('.modal-body');
+        const modalFooter = modal.querySelector('.modal-footer');
+        
+        const eventDate = new Date(event.dateCours);
+        const dateStr = eventDate.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        const timeStr = eventDate.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    
+        modalBody.innerHTML = `
+            <p><strong>Date :</strong> ${dateStr}</p>
+            <p><strong>Heure :</strong> ${timeStr}</p>
+            <p><strong>Type :</strong> Cours ${event.type}</p>
+        `;
+    
+        modalFooter.innerHTML = '';
+        
+        // Boutons selon le rôle
+        if (!this.isClient()) {  // Si c'est un moniteur
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger';
+            deleteBtn.textContent = 'Supprimer le cours';
+            deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
+            modalFooter.appendChild(deleteBtn);
+        } else {  // Si c'est un client
+            const inscriptionBtn = document.createElement('button');
+            inscriptionBtn.className = 'btn-inscription';
+            inscriptionBtn.textContent = "S'inscrire";
+            inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
+            modalFooter.appendChild(inscriptionBtn);
+        }
+    
+        modal.style.display = 'block';
+    }
 
+        
 
-           modalBody.innerHTML = `
-               <p><strong>Date :</strong> ${dateStr}</p>
-               <p><strong>Heure :</strong> ${timeStr}</p>
-               <p><strong>Type :</strong> Cours ${event.type}</p>
-           `;
+    
+        isClient() {
 
-
-           modalFooter.innerHTML = '';
-          
-           // Boutons selon le rôle
-           if (!this.isClient()) {  // Si c'est un moniteur
-               const deleteBtn = document.createElement('button');
-               deleteBtn.className = 'btn btn-danger';
-               deleteBtn.textContent = 'Supprimer le cours';
-               deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
-               modalFooter.appendChild(deleteBtn);
-           } else {  // Si c'est un client
-               const inscriptionBtn = document.createElement('button');
-               inscriptionBtn.className = 'btn-inscription';
-               inscriptionBtn.textContent = "S'inscrire";
-               inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
-               modalFooter.appendChild(inscriptionBtn);
-           }
-
-
-           modal.style.display = 'block';
-       }
-
-
-       isClient() {
-           // TODO Gérer la détéction client ou Moniteur.
-           return userType === 'client';
-       }
-
+            return this.userType === 'client';
+        }
+    
 
 
 
