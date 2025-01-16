@@ -221,52 +221,83 @@ def creer_cours():
 @app.route('/inscription_cours/<int:cours_id>', methods=['POST'])
 @login_required
 def inscription_cours(cours_id):
-   if current_user.type != 'client':
-       flash('Accès réservé aux clients', 'danger')
-       return redirect(url_for('planning'))
-      
-   cours = CoursRegulier.query.get_or_404(cours_id)
-  
-   # Vérifier si le cours n'est pas complet pour la prochaine séance
-   today = datetime.today()
-   prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
-  
-   nb_inscrits = Reserver.query.filter_by(
-       id_cours=cours_id,
-       dateCours=prochaine_date
-   ).count()
-  
-   if nb_inscrits >= cours.nbPersMax:
-       flash('Ce cours est complet pour la prochaine séance', 'danger')
-       return redirect(url_for('planning'))
-  
-   # Vérifier si le client n'est pas déjà inscrit à ce cours
-   deja_inscrit = Reserver.query.filter_by(
-       id_cours=cours_id,
-       id_client=current_user.id,
-       dateCours=prochaine_date
-   ).first()
-  
-   if deja_inscrit:
-       flash('Vous êtes déjà inscrit à ce cours', 'danger')
-       return redirect(url_for('planning'))
-  
-   # TODO: Ajouter la sélection du poney lors de l'inscription
-   reservation = Reserver(
-       id_cours=cours_id,
-       id_client=current_user.id,
-       dateCours=prochaine_date
-   )
-  
-   try:
-       db.session.add(reservation)
-       db.session.commit()
-       flash('Inscription réussie!', 'success')
-   except Exception as e:
-       db.session.rollback()
-       flash(f'Erreur lors de l\'inscription: {str(e)}', 'danger')
-      
-   return redirect(url_for('planning'))
+    if current_user.type != 'client':
+        return jsonify({'message': 'Accès réservé aux clients'}), 403
+    
+    # Récupérer le cours
+    cours = CoursRegulier.query.get_or_404(cours_id)
+    prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+
+    # Vérifier si le client n'est pas déjà inscrit à ce cours
+    deja_inscrit = Reserver.query.filter_by(
+        id_cours=cours_id,
+        id_client=current_user.id, 
+        dateCours=prochaine_date
+    ).first()
+
+    if deja_inscrit:
+        return jsonify({'message': 'Vous êtes déjà inscrit à ce cours'}), 400
+
+    # Vérifier si le cours n'est pas complet
+    nb_inscrits = Reserver.query.filter_by(
+        id_cours=cours_id,
+        dateCours=prochaine_date
+    ).count()
+
+    if nb_inscrits >= cours.nbPersMax:
+        return jsonify({'message': 'Ce cours est complet pour la prochaine séance'}), 400
+
+    # Trouver un poney disponible
+    poneys_disponibles = Poney.query.all()
+
+    # Vérifier la disponibilité des poneys pour ce créneau
+    poney_choisi = None
+    for poney in poneys_disponibles:
+        # Vérifier si le poney n'est pas déjà réservé pour ce créneau
+        deja_reserve = Reserver.query.filter_by(
+            id_poney=poney.idPoney,
+            dateCours=prochaine_date
+        ).first()
+        
+        if not deja_reserve:
+            poney_choisi = poney
+            break
+
+    if not poney_choisi:
+        return jsonify({'message': 'Aucun poney n\'est disponible pour ce créneau'}), 400
+
+    # Vérifier si le client n'a pas déjà un autre cours le même jour
+    debut_jour = datetime.combine(prochaine_date.date(), datetime.min.time())
+    fin_jour = datetime.combine(prochaine_date.date(), datetime.max.time())
+    
+    autres_cours = Reserver.query.filter(
+        Reserver.id_client == current_user.id,
+        Reserver.dateCours.between(debut_jour, fin_jour)
+    ).all()
+
+    if autres_cours:
+        return jsonify({'message': 'Vous avez déjà un cours prévu ce jour-là'}), 400
+
+    # Créer la réservation avec le poney assigné
+    try:
+        reservation = Reserver(
+            id_cours=cours_id,
+            id_client=current_user.id,
+            dateCours=prochaine_date,
+            id_poney=poney_choisi.idPoney
+        )
+        
+        db.session.add(reservation)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Inscription réussie !',
+            'poney': poney_choisi.nomPoney
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Erreur lors de l\'inscription: {str(e)}'}), 500
 
 
 @app.route('/planning')
@@ -308,18 +339,22 @@ def get_reservations():
 
 
 def calculer_prochaine_date(jour_cours, heure_cours):
-   """Calcule la prochaine date pour un cours régulier"""
-   today = datetime.today()
-   jours = {
-       'Lundi': 0, 'Mardi': 1, 'Mercredi': 2,
-       'Jeudi': 3, 'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
-   }
-   jour_cours_num = jours[jour_cours]
-   jours_a_ajouter = (jour_cours_num - today.weekday() + 7) % 7
-   if jours_a_ajouter == 0 and today.time() > heure_cours:
-       jours_a_ajouter = 7
-   prochaine_date = today + timedelta(days=jours_a_ajouter)
-   return datetime.combine(prochaine_date.date(), heure_cours)
+    today = datetime.today()
+    jours = {
+    'Lundi': 0, 'Monday': 0,
+    'Mardi': 1, 'Tuesday': 1,
+    'Mercredi': 2, 'Wednesday': 2,
+    'Jeudi': 3, 'Thursday': 3,
+    'Vendredi': 4, 'Friday': 4,
+    'Samedi': 5, 'Saturday': 5,
+    'Dimanche': 6, 'Sunday': 6
+    }
+    jour_cours_num = jours[jour_cours]
+    jours_a_ajouter = (jour_cours_num - today.weekday()) % 7
+    if jours_a_ajouter == 0 and today.time() > heure_cours:
+        jours_a_ajouter = 7
+    prochaine_date = today + timedelta(days=jours_a_ajouter)
+    return datetime.combine(prochaine_date.date(), heure_cours)
 
 
 @app.route('/supprimer_cours/<int:cours_id>', methods=['DELETE'])
@@ -363,7 +398,8 @@ def cours_details(cours_id):
         'dureeCours': cours.dureeCours,
         'prixCours': cours.prixCours,
         'moniteur': f"{cours.moniteur.prenom} {cours.moniteur.nom}",
-        'nbPersMax': cours.nbPersMax
+        'nbPersMax': cours.nbPersMax,
+        'est_inscrit': False
     }
     
     if cours.type == 'particulier':
@@ -372,17 +408,70 @@ def cours_details(cours_id):
             'client': f"{cours_particulier.client.prenom} {cours_particulier.client.nom}",
             'poney': cours_particulier.poney.nomPoney if cours_particulier.poney else "Pas de poney assigné"
         })
-    else:
+    else:  # cours régulier
         cours_regulier = CoursRegulier.query.get(cours_id)
         participants = []
-        reservations = Reserver.query.filter_by(id_cours=cours_id).all()
+        
+        # Calculer la prochaine date du cours
+        prochaine_date = calculer_prochaine_date(cours_regulier.jourCours, cours_regulier.heureCours)
+        
+        # Vérifier si le client actuel est inscrit
+        if current_user.type == 'client':
+            inscription = Reserver.query.filter_by(
+                id_cours=cours_id,
+                id_client=current_user.id,
+                dateCours=prochaine_date
+            ).first()
+            details['est_inscrit'] = inscription is not None
+        
+        # Récupérer les réservations pour la prochaine séance
+        reservations = Reserver.query.filter_by(
+            id_cours=cours_id,
+            dateCours=prochaine_date
+        ).all()
+        
         for reservation in reservations:
             participant = {
                 'nom': reservation.client.nom,
                 'prenom': reservation.client.prenom,
-                'poney': reservation.poney.nomPoney if reservation.poney else None
+                'poney': reservation.poney.nomPoney if reservation.poney else "Pas de poney assigné"
             }
             participants.append(participant)
+        
         details['participants'] = participants
+        details['prochaine_date'] = prochaine_date.isoformat()
+        details['jour_cours'] = cours_regulier.jourCours
+        details['places_disponibles'] = cours_regulier.nbPersMax - len(participants)
     
     return jsonify(details)
+
+
+@app.route('/desinscription_cours/<int:cours_id>', methods=['POST'])
+@login_required
+def desinscription_cours(cours_id):
+    if current_user.type != 'client':
+        return jsonify({'message': 'Accès réservé aux clients'}), 403
+    
+    # Vérification du cours et de la réservation
+    cours = Cours.query.get(cours_id)
+    if not cours:
+        return jsonify({'message': 'Cours introuvable'}), 404
+    
+    # Calcul de la prochaine date
+    prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
+    reservation = Reserver.query.filter_by(
+        id_cours=cours_id,
+        id_client=current_user.id,
+        dateCours=prochaine_date
+    ).first()
+    
+    if reservation:
+        try:
+            db.session.delete(reservation)
+            db.session.commit()
+            return jsonify({'message': 'Désinscription réussie'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'message': 'Erreur serveur : {}'.format(str(e))}), 500
+    
+    return jsonify({'message': 'Aucune inscription trouvée'}), 404

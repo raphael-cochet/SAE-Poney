@@ -242,94 +242,113 @@
           }
 
           async showCourseDetails(event) {
-                const modal = document.getElementById('courseModal');
-                const modalBody = modal.querySelector('.modal-body');
-                const modalFooter = modal.querySelector('.modal-footer');
-                
-                try {
-                     // Récupérer les détails complets du cours
-                     const response = await fetch(`/cours_details/${event.id}`);
-                     const courseDetails = await response.json();
-                     
-                     const eventDate = new Date(event.dateCours);
-                     const dateStr = eventDate.toLocaleDateString('fr-FR', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                     });
-                     const timeStr = eventDate.toLocaleTimeString('fr-FR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                     });
+               const modal = document.getElementById('courseModal');
+               const modalBody = modal.querySelector('.modal-body');
+               const modalFooter = modal.querySelector('.modal-footer');
 
-                     let detailsHTML = `
-                          <div class="course-details">
-                                <p><strong>Date :</strong> ${dateStr}</p>
-                                <p><strong>Heure :</strong> ${timeStr}</p>
-                                <p><strong>Type :</strong> Cours ${event.type}</p>
-                                <p><strong>Durée :</strong> ${courseDetails.dureeCours} minutes</p>
-                                <p><strong>Prix :</strong> ${courseDetails.prixCours}€</p>
-                                <p><strong>Moniteur :</strong> ${courseDetails.moniteur}</p>
-                          `;
+               try {
+                    // Récupérer les détails complets du cours
+                    const response = await fetch(`/cours_details/${event.id}`);
+                    const courseDetails = await response.json();
 
-                     if (event.type === 'particulier') {
-                          detailsHTML += `
-                                <p><strong>Client :</strong> ${courseDetails.client}</p>
-                                <p><strong>Poney assigné :</strong> ${courseDetails.poney}</p>
-                          `;
-                     } else {
-                          detailsHTML += `
-                                <div class="participants-list">
-                                     <h4>Participants (${courseDetails.participants.length}/${courseDetails.nbPersMax})</h4>
-                                     <ul>
-                          `;
-                          
-                          if (courseDetails.participants.length > 0) {
-                                courseDetails.participants.forEach(participant => {
-                                     detailsHTML += `
-                                          <li>
-                                                ${participant.nom} ${participant.prenom}
-                                                ${participant.poney ? ` - Poney: ${participant.poney}` : ' - Pas de poney assigné'}
-                                          </li>
-                                     `;
-                                });
-                          } else {
-                                detailsHTML += `<li>Aucun participant inscrit</li>`;
-                          }
-                          
-                          detailsHTML += `
-                                     </ul>
-                                </div>
-                          `;
-                     }
+                    const eventDate = new Date(event.dateCours);
+                    const dateStr = eventDate.toLocaleDateString('fr-FR', {
+                         weekday: 'long',
+                         year: 'numeric',
+                         month: 'long',
+                         day: 'numeric'
+                    });
+                    const timeStr = eventDate.toLocaleTimeString('fr-FR', {
+                         hour: '2-digit',
+                         minute: '2-digit'
+                    });
 
-                     detailsHTML += '</div>';
-                     modalBody.innerHTML = detailsHTML;
+                    // Construire le HTML des détails du cours
+                    let detailsHTML = `
+                         <div class="course-details">
+                              <p><strong>Date :</strong> ${dateStr}</p>
+                              <p><strong>Heure :</strong> ${timeStr}</p>
+                              <p><strong>Type :</strong> Cours ${event.type}</p>
+                              <p><strong>Durée :</strong> ${courseDetails.dureeCours} minutes</p>
+                              <p><strong>Prix :</strong> ${courseDetails.prixCours}€</p>
+                              <p><strong>Moniteur :</strong> ${courseDetails.moniteur}</p>
+                    `;
 
-                     modalFooter.innerHTML = '';
-                     
-                     if (!this.isClient()) {
-                          const deleteBtn = document.createElement('button');
-                          deleteBtn.className = 'btn btn-danger';
-                          deleteBtn.textContent = 'Supprimer le cours';
-                          deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
-                          modalFooter.appendChild(deleteBtn);
-                     } else if (event.type === 'régulier') {
-                          const inscriptionBtn = document.createElement('button');
-                          inscriptionBtn.className = 'btn-inscription';
-                          inscriptionBtn.textContent = "S'inscrire";
-                          inscriptionBtn.addEventListener('click', () => this.inscrireCours(event.id));
-                          modalFooter.appendChild(inscriptionBtn);
-                     }
+                    // Afficher les détails spécifiques selon le type de cours
+                    if (event.type === 'particulier') {
+                         detailsHTML += `
+                              <p><strong>Client :</strong> ${courseDetails.client}</p>
+                              <p><strong>Poney assigné :</strong> ${courseDetails.poney}</p>
+                         `;
+                    } else {
+                         // Pour les cours réguliers, afficher la liste des participants
+                         detailsHTML += `
+                              <div class="participants-list">
+                                   <h4>Participants (${courseDetails.participants.length}/${courseDetails.nbPersMax})</h4>
+                                   <ul class="list-unstyled">
+                         `;
 
-                     modal.style.display = 'block';
-                     
-                } catch (error) {
-                     console.error('Erreur lors du chargement des détails:', error);
-                     modalBody.innerHTML = '<p>Erreur lors du chargement des détails du cours</p>';
-                }
-          }
+                         if (courseDetails.participants.length > 0) {
+                              courseDetails.participants.forEach(participant => {
+                                   detailsHTML += `
+                                   <li class="participant-item">
+                                        <span class="participant-name">${participant.prenom} ${participant.nom}</span>
+                                        <span class="participant-poney"> - Poney: ${participant.poney}</span>
+                                   </li>
+                                   `;
+                              });
+                         } else {
+                              detailsHTML += `<li>Aucun participant inscrit</li>`;
+                         }
+
+                         if (courseDetails.places_disponibles > 0) {
+                              detailsHTML += `<p class="available-spots">Places disponibles : ${courseDetails.places_disponibles}</p>`;
+                         } else {
+                              detailsHTML += `<p class="no-spots">Cours complet</p>`;
+                         }
+
+                         detailsHTML += `
+                                   </ul>
+                              </div>
+                         `;
+                    }
+
+                    detailsHTML += '</div>';
+                    modalBody.innerHTML = detailsHTML;
+
+                    // Gestion des boutons dans le footer
+                    modalFooter.innerHTML = '';
+
+                    if (this.isClient()) {
+                         if (event.type === 'régulier') {
+                              const button = document.createElement('button');
+                              if (courseDetails.est_inscrit) {
+                                   button.className = 'btn btn-danger';
+                                   button.textContent = 'Se désinscrire';
+                                   button.addEventListener('click', () => this.desinscrireCours(event.id));;
+                              } else if (courseDetails.places_disponibles > 0) {
+                                   button.className = 'btn btn-primary';
+                                   button.textContent = "S'inscrire";
+                                   button.addEventListener('click', () => this.inscrireCours(event.id));
+                              }
+                              modalFooter.appendChild(button);
+                         }
+                    } else if (!this.isClient()) {
+                         const deleteBtn = document.createElement('button');
+                         deleteBtn.className = 'btn btn-danger';
+                         deleteBtn.textContent = 'Supprimer le cours';
+                         deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
+                         modalFooter.appendChild(deleteBtn);
+                    }
+
+                    // Afficher la modal
+                    modal.style.display = 'block';
+
+               } catch (error) {
+                    console.error('Erreur lors du chargement des détails:', error);
+                    modalBody.innerHTML = '<p class="error-message">Erreur lors du chargement des détails du cours</p>';
+               }
+               }
 
           isClient() {
                 return userType === 'client';
@@ -390,6 +409,34 @@
                      return false;
                 }
           }
+
+          async desinscrireCours(coursId) {
+               if (!confirm('Êtes-vous sûr de vouloir vous désinscrire de ce cours ?')) {
+                    return;
+               }
+
+               try {
+                    const response = await fetch(`/desinscription_cours/${coursId}`, {
+                         method: 'POST',
+                         headers: {
+                              'Content-Type': 'application/json',
+                         },
+                    });
+
+                    if (response.ok) {
+                         alert('Désinscription réussie !');
+                         this.loadEvents(); // Recharge les événements pour mettre à jour le calendrier
+                         document.getElementById('courseModal').style.display = 'none';
+                    } else {
+                         const error = await response.json();
+                         alert(error.message || 'Erreur lors de la désinscription');
+                    }
+               } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la désinscription');
+               }
+
+           }
      }
 
      // Initialisation

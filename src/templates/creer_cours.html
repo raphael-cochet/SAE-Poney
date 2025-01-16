@@ -1,99 +1,95 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-   <h2>Créer un cours</h2>
-   <form method="POST">
-       <div class="form-group">
-           <label>Type de cours</label>
-           <select name="type_cours" class="form-control" id="type_cours">
-               <option value="regulier">Cours régulier</option>
-               <option value="particulier">Cours particulier</option>
-           </select>
-       </div>
+    <h2>Créer un cours</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Type de cours</label>
+            <select name="type_cours" class="form-control" id="type_cours">
+                <option value="regulier">Cours régulier</option>
+                <option value="particulier">Cours particulier</option>
+            </select>
+        </div>
 
+        <!-- Champs pour cours régulier -->
+        <div id="regulier-fields">
+            <div class="form-group">
+                <label>Jour de la semaine</label>
+                <select name="jour" class="form-control">
+                    <option value="Lundi">Lundi</option>
+                    <option value="Mardi">Mardi</option>
+                    <option value="Mercredi">Mercredi</option>
+                    <option value="Jeudi">Jeudi</option>
+                    <option value="Vendredi">Vendredi</option>
+                    <option value="Samedi">Samedi</option>
+                    <option value="Dimanche">Dimanche</option>
+                </select>
+            </div>
+        </div>
 
-       <!-- Champs pour cours régulier -->
-       <div id="regulier-fields">
-           <div class="form-group">
-               <label>Jour de la semaine</label>
-               <select name="jour" class="form-control">
-                   <option value="Lundi">Lundi</option>
-                   <option value="Mardi">Mardi</option>
-                   <option value="Mercredi">Mercredi</option>
-                   <option value="Jeudi">Jeudi</option>
-                   <option value="Vendredi">Vendredi</option>
-                   <option value="Samedi">Samedi</option>
-                   <option value="Dimanche">Dimanche</option>
-               </select>
-           </div>
-       </div>
+        <!-- Champs pour cours particulier -->
+        <div id="particulier-fields" style="display:none;">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Client</label>
+                <select name="client" class="form-control">
+                    {% for client in clients %}
+                        <option value="{{ client.id }}">{{ client.nom }} {{ client.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Poney</label>
+                <select name="poney" class="form-control">
+                    {% for poney in poneys %}
+                        <option value="{{ poney.idPoney }}">
+                            {{ poney.nomPoney }} (Max: {{ poney.poidsMaxPoney }} kg)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
-
-       <!-- Champs pour cours particulier -->
-       <div id="particulier-fields" style="display:none;">
-           <div class="form-group">
-               <label>Date</label>
-               <input type="date" name="date" class="form-control">
-           </div>
-           <div class="form-group">
-               <label>Client</label>
-               <select name="client" class="form-control">
-                   {% for client in clients %}
-                       <option value="{{ client.id }}">{{ client.nom }} {{ client.prenom }}</option>
-                   {% endfor %}
-               </select>
-           </div>
-           <div class="form-group">
-               <label>Poney</label>
-               <select name="poney" class="form-control">
-                   {% for poney in poneys %}
-                       <option value="{{ poney.idPoney }}">
-                           {{ poney.nomPoney }} (Max: {{ poney.poidsMaxPoney }} kg)
-                       </option>
-                   {% endfor %}
-               </select>
-           </div>
-       </div>
-
-
-       <div class="form-group">
-           <label>Heure</label>
-           <input type="time" name="heure" class="form-control" required>
-       </div>
-       <div class="form-group">
-           <label>Durée (en heures)</label>
-           <input type="number" name="duree" class="form-control" required>
-       </div>
-       <div class="form-group">
-           <label>Prix</label>
-           <input type="number" step="0.01" name="prix" class="form-control" required>
-       </div>
-       <div class="form-group" id="nb-max-field">
-           <label>Nombre maximum de participants</label>
-           <input type="number" name="nb_max" class="form-control" required>
-       </div>
-       <button type="submit" class="btn btn-primary">Créer le cours</button>
-   </form>
+        <div class="form-group">
+            <label>Heure</label>
+            <input type="time" name="heure" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Durée (en heures)</label>
+            <input type="number" name="duree" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Prix</label>
+            <input type="number" step="0.01" name="prix" class="form-control" required>
+        </div>
+        <div class="form-group" id="nb-max-field">
+            <label>Nombre maximum de participants</label>
+            <input type="number" name="nb_max" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Créer le cours</button>
+    </form>
 </div>
-
 
 <script>
 document.getElementById('type_cours').addEventListener('change', function() {
-   const regulierFields = document.getElementById('regulier-fields');
-   const particulierFields = document.getElementById('particulier-fields');
-   const nbMaxField = document.getElementById('nb-max-field');
-  
-   if (this.value === 'particulier') {
-       regulierFields.style.display = 'none';
-       particulierFields.style.display = 'block';
-       nbMaxField.style.display = 'none';
-       nbMaxField.querySelector('input').value = '1';
-   } else {
-       regulierFields.style.display = 'block';
-       particulierFields.style.display = 'none';
-       nbMaxField.style.display = 'block';
-       nbMaxField.querySelector('input').value = '';
-   }
+    const regulierFields = document.getElementById('regulier-fields');
+    const particulierFields = document.getElementById('particulier-fields');
+    const nbMaxField = document.getElementById('nb-max-field');
+    
+    if (this.value === 'particulier') {
+        regulierFields.style.display = 'none';
+        particulierFields.style.display = 'block';
+        nbMaxField.style.display = 'none';
+        nbMaxField.querySelector('input').value = '1';
+    } else {
+        regulierFields.style.display = 'block';
+        particulierFields.style.display = 'none';
+        nbMaxField.style.display = 'block';
+        nbMaxField.querySelector('input').value = '';
+    }
 });
 </script>
 {% endblock %}
