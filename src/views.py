@@ -33,9 +33,8 @@ def creer_compte():
 
 
        if not all([nom, prenom, type_compte, email, password]):
-           flash('Tous les champs sont obligatoires.', 'danger')
+           flash('Tous hamps sont obligatoires.', 'danger')
            return redirect(url_for('creer_compte'))
-
 
        try:
            hashed_password = generate_password_hash(password)
@@ -224,11 +223,9 @@ def inscription_cours(cours_id):
     if current_user.type != 'client':
         return jsonify({'message': 'Accès réservé aux clients'}), 403
     
-    # Récupérer le cours
     cours = CoursRegulier.query.get_or_404(cours_id)
     prochaine_date = calculer_prochaine_date(cours.jourCours, cours.heureCours)
 
-    # Vérifier si le client n'est pas déjà inscrit à ce cours
     deja_inscrit = Reserver.query.filter_by(
         id_cours=cours_id,
         id_client=current_user.id, 
@@ -238,7 +235,6 @@ def inscription_cours(cours_id):
     if deja_inscrit:
         return jsonify({'message': 'Vous êtes déjà inscrit à ce cours'}), 400
 
-    # Vérifier si le cours n'est pas complet
     nb_inscrits = Reserver.query.filter_by(
         id_cours=cours_id,
         dateCours=prochaine_date
@@ -247,13 +243,10 @@ def inscription_cours(cours_id):
     if nb_inscrits >= cours.nbPersMax:
         return jsonify({'message': 'Ce cours est complet pour la prochaine séance'}), 400
 
-    # Trouver un poney disponible
     poneys_disponibles = Poney.query.all()
 
-    # Vérifier la disponibilité des poneys pour ce créneau
     poney_choisi = None
     for poney in poneys_disponibles:
-        # Vérifier si le poney n'est pas déjà réservé pour ce créneau
         deja_reserve = Reserver.query.filter_by(
             id_poney=poney.idPoney,
             dateCours=prochaine_date
@@ -266,7 +259,6 @@ def inscription_cours(cours_id):
     if not poney_choisi:
         return jsonify({'message': 'Aucun poney n\'est disponible pour ce créneau'}), 400
 
-    # Vérifier si le client n'a pas déjà un autre cours le même jour
     debut_jour = datetime.combine(prochaine_date.date(), datetime.min.time())
     fin_jour = datetime.combine(prochaine_date.date(), datetime.max.time())
     
@@ -278,7 +270,6 @@ def inscription_cours(cours_id):
     if autres_cours:
         return jsonify({'message': 'Vous avez déjà un cours prévu ce jour-là'}), 400
 
-    # Créer la réservation avec le poney assigné
     try:
         reservation = Reserver(
             id_cours=cours_id,
