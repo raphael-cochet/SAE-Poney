@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='calendrier.css') }}">
+
+<!-- Le modal -->
+<div id="courseModal" class="modal">
+    <div class="modal-content">
+         <div class="modal-header">
+              <h3>Détails du cours</h3>
+              <span class="modal-close">&times;</span>
+         </div>
+         <div class="modal-body">
+         </div>
+         <div class="modal-footer">
+         </div>
+    </div>
+</div>
+
+<div class="calendar">
+    <div class="calendar-header">
+         <div class="calendar-controls">
+              <button id="prevMonth">&lt;</button>
+              <button id="today">Aujourd'hui</button>
+              <button id="nextMonth">&gt;</button>
+         </div>
+         <h2 id="currentMonth"></h2>
+        
+         {% if current_user.type != 'client' %}
+               <div class="add-course-button">
+                    <a href="{{ url_for('creer_cours') }}" class="btn btn-primary">
+                              Ajouter un cours
+                    </a>
+               </div>
+          {% endif %}
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+    </div>
+</div>
+
+<script>
+     // Passer le type d'utilisateur au JavaScript
+     const userType = "{{ current_user.type }}";
+</script>
+
+<script>
+     class Calendar {
+          constructor() {
+                this.currentDate = new Date();
+                this.days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+                this.months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                                 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                this.events = [];
+                
+                this.initializeCalendar();
+                this.loadEvents();
+          }
+
+          initializeCalendar() {
+                document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+                document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+                document.getElementById('today').addEventListener('click', () => this.goToToday());
+                
+                this.renderCalendar();
+                window.addEventListener('resize', () => this.updateCellSizes());
+          }
+          
+          changeMonth(n) {
+                this.currentDate.setMonth(this.currentDate.getMonth() + n);
+                this.renderCalendar();
+                this.loadEvents();  // Recharger les événements pour le nouveau mois
+          }
+
+          goToToday() {
+                this.currentDate = new Date();
+                this.renderCalendar();
+                this.loadEvents();  // Recharger les événements
+          }
+
+          updateCellSizes() {
+                const cells = document.querySelectorAll('.calendar-cell');
+                const width = cells[0].offsetWidth;
+                cells.forEach(cell => {
+                     cell.style.height = `${width}px`;
+                });
+          }
+
+          async loadEvents() {
+               try {
+                    const response = await fetch('/get_reservations');
+                    const data = await response.json();
+                    
+                    const enrichedEvents = await Promise.all(data.map(async event => {
+                         if (event.type === 'régulier') {
+                              const detailsResponse = await fetch(`/cours_details/${event.id}`);
+                              const details = await detailsResponse.json();
+                              return {
+                              ...event,
+                              est_inscrit: details.est_inscrit
+                              };
+                         }
+                         return event;
+                    }));
+                    
+                    this.events = this.processEvents(enrichedEvents);
+                    this.renderCalendar();
+               } catch (error) {
+                    console.error('Erreur lors du chargement des événements:', error);
+               }
+          }
+
+          processEvents(events) {
+                const processedEvents = [];
+                
+                events.forEach(event => {
+                     if (event.type === 'particulier') {
+                          // Ajouter directement les cours particuliers
+                          processedEvents.push(event);
+                     } else if (event.type === 'régulier') {
+                          // Générer les occurrences pour le mois en cours
+                          const occurrences = this.generateRecurringEvents(event);
+                          processedEvents.push(...occurrences);
+                     }
+                });
+                
+                return processedEvents;
+          }
+
+          generateRecurringEvents(event) {
+                const occurrences = [];
+                const firstDate = new Date(event.dateCours);
+                const dayOfWeek = firstDate.getDay();
+                
+                // Obtenir le premier et dernier jour du mois affiché
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                
+                // Trouver la première occurrence dans le mois
+                let currentDate = new Date(firstDayOfMonth);
+                currentDate.setDate(1);
+                
+                // Ajuster au premier jour correspondant
+                while (currentDate.getDay() !== dayOfWeek) {
+                     currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                // Générer toutes les occurrences pour le mois
+                while (currentDate <= lastDayOfMonth) {
+                     occurrences.push({
+                          ...event,
+                          dateCours: new Date(
+                                currentDate.getFullYear(),
+                                currentDate.getMonth(),
+                                currentDate.getDate(),
+                                firstDate.getHours(),
+                                firstDate.getMinutes()
+                          ).toISOString()
+                     });
+                     
+                     // Passer à la semaine suivante
+                     currentDate.setDate(currentDate.getDate() + 7);
+                }
+                
+                return occurrences;
+          }
+
+          renderCalendar() {
+                const grid = document.getElementById('calendarGrid');
+                grid.innerHTML = '';
+                
+                // Ajouter les en-têtes des jours
+                this.days.forEach(day => {
+                     const dayHeader = document.createElement('div');
+                     dayHeader.className = 'calendar-day-header';
+                     dayHeader.textContent = day;
+                     grid.appendChild(dayHeader);
+                });
+
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startingDay = firstDay.getDay();
+                
+                document.getElementById('currentMonth').textContent =
+                     `${this.months[month]} ${year}`;
+
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                for (let i = startingDay - 1; i >= 0; i--) {
+                     const day = prevMonthLastDay - i;
+                     this.createDayCell(day, 'outside-month');
+                }
+
+                const today = new Date();
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                     const isToday = today.getDate() === day &&
+                                        today.getMonth() === month &&
+                                        today.getFullYear() === year;
+                     this.createDayCell(day, isToday ? 'today' : '');
+                }
+
+                const remainingCells = 42 - (startingDay + lastDay.getDate());
+                for (let day = 1; day <= remainingCells; day++) {
+                     this.createDayCell(day, 'outside-month');
+                }
+
+                requestAnimationFrame(() => this.updateCellSizes());
+          }
+
+          createDayCell(day, className = '') {
+               const cell = document.createElement('div');
+               cell.className = `calendar-cell ${className}`;
+               
+               const dateDiv = document.createElement('div');
+               dateDiv.className = 'calendar-date';
+               dateDiv.textContent = day;
+               cell.appendChild(dateDiv);
+
+               // Créer une date pour ce jour
+               const cellDate = new Date(
+                    this.currentDate.getFullYear(),
+                    this.currentDate.getMonth(),
+                    day
+               );
+
+               // Filtrer les événements pour ce jour
+               const dayEvents = this.events.filter(event => {
+                    const eventDate = new Date(event.dateCours);
+                    return eventDate.getDate() === cellDate.getDate() &&
+                              eventDate.getMonth() === cellDate.getMonth() &&
+                              eventDate.getFullYear() === cellDate.getFullYear();
+               });
+
+               // Ajouter les événements à la cellule
+               dayEvents.forEach(event => {
+                    const eventDiv = document.createElement('div');
+                    
+                    // Déterminer la classe CSS en fonction du type de cours et de l'inscription
+                    let eventClass = 'calendar-event';
+                    if (userType === 'client') {
+                         if (event.type === 'particulier' || event.est_inscrit) {
+                              eventClass += ' event-inscrit';  // Vert pour les cours où l'utilisateur est inscrit
+                         } else {
+                              eventClass += ' event-non-inscrit';  // Gris pour les cours où l'utilisateur n'est pas inscrit
+                         }
+                    } else {
+                         // Pour les moniteurs, garder l'affichage original
+                         eventClass += event.type === 'régulier' ? ' event-regular' : ' event-private';
+                    }
+                    
+                    eventDiv.className = eventClass;
+                    
+                    const eventDate = new Date(event.dateCours);
+                    const eventTime = eventDate.toLocaleTimeString([], 
+                         {hour: '2-digit', minute:'2-digit'}
+                    );
+                    eventDiv.textContent = `${eventTime} - Cours ${event.type}`;
+                    eventDiv.addEventListener('click', () => this.showCourseDetails(event));
+                    cell.appendChild(eventDiv);
+               });
+
+               document.getElementById('calendarGrid').appendChild(cell);
+          }
+
+          async showCourseDetails(event) {
+               const modal = document.getElementById('courseModal');
+               const modalBody = modal.querySelector('.modal-body');
+               const modalFooter = modal.querySelector('.modal-footer');
+
+               try {
+                    // Récupérer les détails complets du cours
+                    const response = await fetch(`/cours_details/${event.id}`);
+                    const courseDetails = await response.json();
+
+                    const eventDate = new Date(event.dateCours);
+                    const dateStr = eventDate.toLocaleDateString('fr-FR', {
+                         weekday: 'long',
+                         year: 'numeric',
+                         month: 'long',
+                         day: 'numeric'
+                    });
+                    const timeStr = eventDate.toLocaleTimeString('fr-FR', {
+                         hour: '2-digit',
+                         minute: '2-digit'
+                    });
+
+                    // Construire le HTML des détails du cours
+                    let detailsHTML = `
+                         <div class="course-details">
+                              <p><strong>Date :</strong> ${dateStr}</p>
+                              <p><strong>Heure :</strong> ${timeStr}</p>
+                              <p><strong>Type :</strong> Cours ${event.type}</p>
+                              <p><strong>Durée :</strong> ${courseDetails.dureeCours} heures</p>
+                              <p><strong>Prix :</strong> ${courseDetails.prixCours}€</p>
+                              <p><strong>Moniteur :</strong> ${courseDetails.moniteur}</p>
+                    `;
+
+                    // Afficher les détails spécifiques selon le type de cours
+                    if (event.type === 'particulier') {
+                         detailsHTML += `
+                              <p><strong>Client :</strong> ${courseDetails.client}</p>
+                              <p><strong>Poney assigné :</strong> ${courseDetails.poney}</p>
+                         `;
+                    } else {
+                         // Pour les cours réguliers, afficher la liste des participants
+                         detailsHTML += `
+                              <div class="participants-list">
+                                   <h4>Participants (${courseDetails.participants.length}/${courseDetails.nbPersMax})</h4>
+                                   <ul class="list-unstyled">
+                         `;
+
+                         if (courseDetails.participants.length > 0) {
+                              courseDetails.participants.forEach(participant => {
+                                   detailsHTML += `
+                                   <li class="participant-item">
+                                        <span class="participant-name">${participant.prenom} ${participant.nom}</span>
+                                        <span class="participant-poney"> - Poney: ${participant.poney}</span>
+                                   </li>
+                                   `;
+                              });
+                         } else {
+                              detailsHTML += `<li>Aucun participant inscrit</li>`;
+                         }
+
+                         if (courseDetails.places_disponibles > 0) {
+                              detailsHTML += `<p class="available-spots">Places disponibles : ${courseDetails.places_disponibles}</p>`;
+                         } else {
+                              detailsHTML += `<p class="no-spots">Cours complet</p>`;
+                         }
+
+                         detailsHTML += `
+                                   </ul>
+                              </div>
+                         `;
+                    }
+
+                    detailsHTML += '</div>';
+                    modalBody.innerHTML = detailsHTML;
+
+                    // Gestion des boutons dans le footer
+                    modalFooter.innerHTML = '';
+
+                    if (this.isClient()) {
+                         if (event.type === 'régulier') {
+                              const button = document.createElement('button');
+                              if (courseDetails.est_inscrit) {
+                                   button.className = 'btn btn-danger';
+                                   button.textContent = 'Se désinscrire';
+                                   button.addEventListener('click', () => this.desinscrireCours(event.id));;
+                              } else if (courseDetails.places_disponibles > 0) {
+                                   button.className = 'btn btn-primary';
+                                   button.textContent = "S'inscrire";
+                                   button.addEventListener('click', () => this.inscrireCours(event.id));
+                              }
+                              modalFooter.appendChild(button);
+                         }
+                    } else if (!this.isClient()) {
+                         const deleteBtn = document.createElement('button');
+                         deleteBtn.className = 'btn btn-danger';
+                         deleteBtn.textContent = 'Supprimer le cours';
+                         deleteBtn.addEventListener('click', () => this.deleteCours(event.id));
+                         modalFooter.appendChild(deleteBtn);
+                    }
+
+                    // Afficher la modal
+                    modal.style.display = 'block';
+
+               } catch (error) {
+                    console.error('Erreur lors du chargement des détails:', error);
+                    modalBody.innerHTML = '<p class="error-message">Erreur lors du chargement des détails du cours</p>';
+               }
+               }
+
+          isClient() {
+                return userType === 'client';
+          }
+
+          async inscrireCours(coursId) {
+                try {
+                     const response = await fetch(`/inscription_cours/${coursId}`, {
+                          method: 'POST',
+                          headers: {
+                                'Content-Type': 'application/json'
+                          }
+                     });
+
+                     if (response.ok) {
+                          alert('Inscription réussie !');
+                          this.loadEvents();
+                          document.getElementById('courseModal').style.display = 'none';
+                     } else {
+                          const error = await response.json();
+                          alert(error.message || 'Erreur lors de l\'inscription');
+                     }
+                } catch (error) {
+                     console.error('Erreur:', error);
+                     alert('Erreur lors de l\'inscription');
+                }
+          }
+
+          async deleteCours(coursId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+                     try {
+                          const response = await fetch(`/supprimer_cours/${coursId}`, {
+                                method: 'DELETE',
+                          });
+
+                          if (response.ok) {
+                                alert('Cours supprimé avec succès');
+                                document.getElementById('courseModal').style.display = 'none';
+                                this.loadEvents();  // Recharger le calendrier
+                          } else {
+                                const error = await response.json();
+                                alert(error.message || 'Erreur lors de la suppression');
+                          }
+                     } catch (error) {
+                          console.error('Erreur:', error);
+                          alert('Erreur lors de la suppression du cours');
+                     }
+                }
+          }
+
+          async isMoniteur() {
+                try {
+                     const response = await fetch('/check_moniteur');
+                     const data = await response.json();
+                     return data.is_moniteur;
+                } catch (error) {
+                     console.error('Erreur lors de la vérification du rôle:', error);
+                     return false;
+                }
+          }
+
+          async desinscrireCours(coursId) {
+               if (!confirm('Êtes-vous sûr de vouloir vous désinscrire de ce cours ?')) {
+                    return;
+               }
+
+               try {
+                    const response = await fetch(`/desinscription_cours/${coursId}`, {
+                         method: 'POST',
+                         headers: {
+                              'Content-Type': 'application/json',
+                         },
+                    });
+
+                    if (response.ok) {
+                         alert('Désinscription réussie !');
+                         this.loadEvents(); // Recharge les événements pour mettre à jour le calendrier
+                         document.getElementById('courseModal').style.display = 'none';
+                    } else {
+                         const error = await response.json();
+                         alert(error.message || 'Erreur lors de la désinscription');
+                    }
+               } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la désinscription');
+               }
+
+           }
+     }
+
+     // Initialisation
+     const calendar = new Calendar();
+
+     // Gestionnaires d'événements pour la modal
+     document.querySelector('.modal-close').addEventListener('click', () => {
+          document.getElementById('courseModal').style.display = 'none';
+     });
+
+     window.addEventListener('click', (event) => {
+          const modal = document.getElementById('courseModal');
+          if (event.target === modal) {
+                modal.style.display = 'none';
+          }
+     });
+</script>
+
+{% endblock %}

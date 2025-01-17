@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>{% block title %}My'Page Simple{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    {% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_connexion.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% block content %}
+    <div class="container-fluid vh-100 d-flex align-items-center">
+        <div class="row w-100">
+            <div class="col-md-6 d-flex justify-content-start align-items-stretch position-relative" style="padding: 0;">
+                <img src="{{ url_for('static', filename='images/image_connexion.png') }}" alt="Grand Galop Connexion icon" class="img-fluid full-height">
+                <h2 class="overlay-text">Grand galop</h2>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center align-items-center">
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Grand Galop" class="logo">
+                    <h2 class="login-title">Connectez-vous !</h2>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div>
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}" role="alert">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="form-group text-left">
+                            <label for="identifiant">Identifiant (email)</label>
+                            <input type="text" name="identifiant" class="form-control" id="identifiant" placeholder="Identifiant" required>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="password">Mot de passe</label>
+                            <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe" required>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="form-check d-flex align-items-center">
+                                    <label class="form-check-label ml-2" for="rememberMe"></label>
+                                </div>
+                                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                            </div>
+                        </div>
+                        <div class="connexion">
+                            <button type="submit" class="btn-connexion btn btn-block">Connexion</button>
+                        </div>
+                    </form>
+                    <div class="create-account">
+                        <span>Pas encore de compte ? </span>
+                        <a href="{{ url_for('creer_compte') }}" class="link-violet">Créer un compte</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

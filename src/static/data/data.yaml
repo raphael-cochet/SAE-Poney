@@ -1,0 +1,150 @@
+clients:
+  - id: 1
+    nomP: "Doe"
+    prenomP: "Jane"
+    mail: "jane.doe@email.com"
+    poidsC: 55.0
+
+  - id: 2
+    nomP: "Smith"
+    prenomP: "Emily"
+    mail: "emily.smith@email.com"
+    poidsC: 60.0
+
+  - id: 3
+    nomP: "Martin"
+    prenomP: "Lucas"
+    mail: "lucas.martin@email.com"
+    poidsC: 75.0
+
+  - id: 4
+    nomP: "Dubois"
+    prenomP: "Sophie"
+    mail: "sophie.dubois@email.com"
+    poidsC: 52.0
+
+moniteurs:
+  - id: 5
+    nomP: "Dupont"
+    prenomP: "Pierre"
+    mail: "pierre.dupont@equitation.com"
+  
+  - id: 6
+    nomP: "Garcia"
+    prenomP: "Maria"
+    mail: "maria.garcia@equitation.com"
+  
+  - id: 7
+    nomP: "Lambert"
+    prenomP: "Jean"
+    mail: "jean.lambert@equitation.com"
+  
+  - id: 8
+    nomP: "Moreau"
+    prenomP: "Claire"
+    mail: "claire.moreau@equitation.com"
+
+cours_reguliers:
+  - idCours: 1
+    nbPersMax: 8
+    dureeCours: 1
+    jourCours: "Lundi"
+    heureCours: "14:00"
+    prixCours: 35.0
+    id_moniteur: 5
+  
+  - idCours: 2
+    nbPersMax: 6
+    dureeCours: 2
+    jourCours: "Mardi"
+    heureCours: "10:00"
+    prixCours: 50.0
+    id_moniteur: 6
+
+cours_particuliers:
+  - idCours: 5
+    dureeCours: 1
+    dateCours: "2025-01-16 16:00:00"
+    prixCours: 60.0
+    id_moniteur: 7
+    id_client: 2
+    id_poney: 3
+
+  - idCours: 6
+    dureeCours: 2
+    dateCours: "2025-01-17 10:00:00"
+    prixCours: 75.0
+    id_moniteur: 8
+    id_client: 4
+    id_poney: 5
+
+reservations:
+  - id: 1
+    id_cours: 1
+    id_client: 1
+    id_poney: 1
+    dateCours: "2025-01-13 14:00:00"
+
+  - id: 2
+    id_cours: 5
+    id_client: 2
+    id_poney: 3
+    dateCours: "2025-01-16 16:00:00"
+
+poneys:
+  - idPoney: 1
+    nomPoney: "Aragon"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 2
+    nomPoney: "Bart"
+    poidsMaxPoney: 90.0
+
+  - idPoney: 3
+    nomPoney: "Edgar"
+    poidsMaxPoney: 70.0
+
+  - idPoney: 4
+    nomPoney: "Falco"
+    poidsMaxPoney: 85.0
+
+  - idPoney: 5
+    nomPoney: "Fleur"
+    poidsMaxPoney: 85.0
+
+  - idPoney: 6
+    nomPoney: "Goss"
+    poidsMaxPoney: 65.0
+
+  - idPoney: 7
+    nomPoney: "Lucye"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 8
+    nomPoney: "Mulata"
+    poidsMaxPoney: 80.0
+
+  - idPoney: 9
+    nomPoney: "Zeina"
+    poidsMaxPoney: 80.0
+
+cotisations:
+  - idCotisation: 1
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 1
+  
+  - idCotisation: 2
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 2
+  
+  - idCotisation: 3
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 3
+  
+  - idCotisation: 4
+    dateRecCoti: "2024-09-01"
+    prixCoti: 150.0
+    id_client: 4

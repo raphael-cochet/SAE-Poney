@@ -1,0 +1,203 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter-VariableFont_opsz,wght.woff2') format('woff2'), /* Modern browsers */
+         url('../fonts/Inter-VariableFont_opsz,wght.woff') format('woff'),   /* Older browsers */
+         url('../fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype'); /* Legacy browsers */
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.footer,
+.custom-box {
+    background-color: #14245A;
+    color: white;
+    padding: 1rem 0;
+}
+
+.navbar {
+    background-color: white;
+}
+
+.navbar-brand img {
+    height: 40px;
+}
+
+.navbar-nav .nav-link {
+    color: #14245A;
+    text-decoration: none;
+}
+
+.btn-connexion,
+.btn-primary,
+.btn-violet {
+    background-color: #14245A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-connexion:hover,
+.btn-primary:hover,
+.btn-violet:hover {
+    background-color: #1e3583;
+    color: white;
+}
+
+.card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+.card img {
+    width: 60px;
+    margin-right: 20px;
+}
+
+.card-body {
+    text-align: left;
+}
+
+.card-title {
+    color: #14245A; 
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    color: #6c63ff;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+.link-commencer::after {
+    content: ' ➔';
+    margin-left: 5px;
+}
+
+.custom-box {
+    background-color: #14245A;
+    color: white;
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 80px;
+}
+
+.custom-box h2,
+.custom-box p {
+    margin: 0;
+}
+
+.form-check-input {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    margin-right: 0.9rem;
+}
+
+.form-check-input:checked {
+    background-color: #14245A;
+    border-color: #14245A;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(105, 34, 86, 0.5);
+}
+
+.text-center img {
+    max-width: 150px; /* Réduit la largeur maximale du logo */
+    height: auto; /* Conserve les proportions du logo */
+    margin-bottom: 20px; /* Ajoute un espace sous le logo */
+}
+
+.form-check-label {
+    margin-top: 4px;
+} 
+
+
+
+
+
+img.img-fluid {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.top-container {
+    padding-top: 0;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+.img-fluid {
+    max-height: 100vh;
+    object-fit: cover;
+    height: 1080px;
+    width: 1109px;
+}
+
+.full-height {
+    height: 100vh; 
+    object-fit: cover;
+    height: 1080px;
+    width: 1109px;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 4.9rem;
+}
+
+.logo {
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.login-title {
+    margin-top: 100px;
+    margin-bottom: 60px;
+}
+
+.forgot-password {
+    color: #14245A;
+}
+
+.forgot-password:hover {
+    color: #14245A;
+    text-decoration: underline;
+}
+
+.connexion {
+    margin-top: 50px;
+}
+
+.create-account {
+    margin-top: 120px; 
+}
+
+.mt-custom {
+    margin-top: 20px;
+}
+
+

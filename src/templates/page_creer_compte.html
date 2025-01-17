@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Créer un compte{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    {% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_creer_compte.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% block content %}
+    <div class="container-fluid vh-100 d-flex align-items-center">
+        <div class="row w-100">
+            <div class="col-md-6 d-flex justify-content-start align-items-stretch position-relative" style="padding: 0;">
+                <img src="{{ url_for('static', filename='images/image_connexion.png') }}" alt="Grand galop image connexion" class="img-fluid full-height">
+                <h2 class="overlay-text">Grand galop</h2>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center align-items-center">
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Grand Galop" class="logo">
+                    <h2 class="create-title">Créer un compte</h2>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="container mt-3">
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <form action="{{ url_for('creer_compte') }}" method="post">
+                        <div class="form-group text-left">
+                            <label for="nom">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="prenom">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" placeholder="Votre prénom" required>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="type">Rôle</label>
+                            <select class="form-control" id="type" name="type" required>
+                                <option value="" disabled selected>Choisissez votre rôle</option>
+                                <option value="client">Client</option>
+                                <option value="moniteur">Professeur</option>
+                            </select>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="identifiant">Email</label>
+                            <input type="email" class="form-control" id="identifiant" name="identifiant" placeholder="Votre email" required>
+                        </div>
+                        <div class="form-group text-left"> 
+                            <label for="password">Mot de passe</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Votre mot de passe" required>
+                        </div>                        
+                        <div class="create-account-btn">
+                            <button type="submit" class="btn-create-account btn btn-block">Créer mon compte</button>
+                        </div>
+                    </form>
+                    <div class="already-account">
+                        <span>Déjà un compte ?</span>
+                        <a href="{{ url_for('login') }}" class="link-violet">Connectez-vous</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

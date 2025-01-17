@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block styles %}
+   {{ super() }}
+   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+
+{% block content %}
+   <div class="Titre-cours">
+       <h1 class="text-center">Cours</h1>
+   </div>
+
+
+   <div class="blue-banner-cours">
+       <div class="image-wrapper">
+           <img src="{{ url_for('static', filename='images/cours.png') }}" alt="Cours">
+       </div>
+       <div class="text-wrapper">
+           <h2 class="text-white">Nos cours !</h2>
+           <p class="text-white">
+               Au Club Grand Galop, nos cours de poney sont conçus pour tous les niveaux, de débutant à confirmé.
+               Encadrés par des moniteurs expérimentés, les enfants découvrent les joies de l’équitation tout en apprenant
+               à monter, à prendre soin de leur poney et à développer leur confiance en soi. Un moment de plaisir et de
+               progrès à chaque séance !
+           </p>
+       </div>
+   </div>
+
+
+   <div class="inscrire">
+       <h2>Inscrivez-vous !</h2>
+       <div class="informations-content">
+           <div class="inscrire-text">
+               <p>Commencez dès maintenant en vous inscrivant aux cours qui vous intéressent. Nous avons hâte de vous rencontrer !</p>
+               <a href="{{ url_for('planning') }}" class="btn btn-primary">Commencer →</a>
+           </div>
+       </div>
+   </div>
+{% endblock %}

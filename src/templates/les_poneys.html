@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid my-4">
+    <div class="custom-box-poney">
+        <h1 class="text-center">Les Poneys</h1>
+    </div>
+</div>
+
+<main class="container py-5">
+    <div class="row">
+        {% for poney in poneys %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="image-container" style="height: 300px; overflow: hidden;">
+                        <img src="{{ url_for('static', filename='images/poneys/' + poney.nomPoney + '.png') }}" 
+                             class="card-img-top pony-image" 
+                             alt="Poney {{ poney.nomPoney }}"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ poney.nomPoney }}</h5>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+
+{% endblock %}
